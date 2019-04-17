@@ -66,7 +66,7 @@ def readLangs(lang1, lang2, reverse=False):
     print("Reading lines...")
     
     # Read the file and split into lines.
-    lines = open("~/lab/aida/conf_nmt/data.txt" % (lang1, lang2), encoding="utf-8").read().strip().split("\n")
+    lines = open("../datasets/fra.txt" % (lang1, lang2), encoding="utf-8").read().strip().split("\n")
 
     # Split every line into pairs and normalize.
     pairs = [[normalizeString(s) for s in l.split("\t")] for l in lines]
@@ -215,13 +215,13 @@ class AttnDecoderRNN(nn.Module):
 def indexesFromSentence(lang, sentence):
     return [lang.word2index[word] for word in sentence.split(' ')]
 
-
+# Append EOS token
 def tensorFromSentence(lang, sentence):
     indexes = indexesFromSentence(lang, sentence)
     indexes.append(EOS_token)
     return torch.tensor(indexes, dtype=torch.long, device=device).view(-1, 1)
 
-
+# Return input and target tensor
 def tensorsFromPair(pair):
     input_tensor = tensorFromSentence(input_lang, pair[0])
     target_tensor = tensorFromSentence(output_lang, pair[1])
@@ -283,9 +283,9 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     return loss.item() / target_length
 
 
+# Measure time and average loss.
 import time
 import math
-
 
 def asMinutes(s):
     m = math.floor(s / 60)
@@ -299,6 +299,41 @@ def timeSince(since, percent):
     es = s / (percent)
     rs = es - s
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
+
+def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, learning_rate=0.01):
+    start = time.time()
+    plot_losses = []
+    print_loss_total = 0  # Reset every print_every
+    plot_loss_total = 0  # Reset every plot_every
+
+    encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
+    decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
+    training_pairs = [tensorsFromPair(random.choice(pairs))
+                      for i in range(n_iters)]
+    criterion = nn.NLLLoss()
+
+    for iter in range(1, n_iters + 1):
+        training_pair = training_pairs[iter - 1]
+        input_tensor = training_pair[0]
+        target_tensor = training_pair[1]
+
+        loss = train(input_tensor, target_tensor, encoder,
+                     decoder, encoder_optimizer, decoder_optimizer, criterion)
+        print_loss_total += loss
+        plot_loss_total += loss
+
+        if iter % print_every == 0:
+            print_loss_avg = print_loss_total / print_every
+            print_loss_total = 0
+            print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters),
+                                         iter, iter / n_iters * 100, print_loss_avg))
+
+        if iter % plot_every == 0:
+            plot_loss_avg = plot_loss_total / plot_every
+            plot_losses.append(plot_loss_avg)
+            plot_loss_total = 0
+
+    showPlot(plot_losses)
 
 
 ################################################
@@ -329,23 +364,31 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
             decoder_output, decoder_hidden, decoder_attention = decoder(
                 decoder_input, decoder_hidden, encoder_outputs)
             decoder_attentions[di] = decoder_attention.data
+            # topv: top value, topi: top index
             topv, topi = decoder_output.data.topk(1)
             if topi.item() == EOS_token:
                 decoded_words.append('<EOS>')
                 break
             else:
-                decoded_words.append(output_lang.index2word[topi.item()])
+                #decoded_words.append(output_lang.index2word[topi.item()])
+##################################
+# Original part: using top Value
+# May be outputted "word(value)"
+                output_wordAndValue = output_lang.index2word[topi.item()])
+                output_wordAndValue += (f"({topv})")
+                decoded_words.append(output_wordAndValue)
+##################################
 
             decoder_input = topi.squeeze().detach()
 
         return decoded_words, decoder_attentions[:di + 1]
 
 def evaluateRandomly(encoder, decoder, n=10):
-    for i in range(n):
-        pair = random.choice(pairs)
-        print('>', pair[0])
-        print('=', pair[1])
+    for i in range(n): pair = random.choice(pairs)
+        print('input>', pair[0])
+        print('target=', pair[1])
         output_words, attentions = evaluate(encoder, decoder, pair[0])
         output_sentence = ' '.join(output_words)
-        print('<', output_sentence)
+        print('output<', output_sentence)
         print('')
+
