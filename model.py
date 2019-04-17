@@ -374,7 +374,7 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
 ##################################
 # Original part: using top Value
 # May be outputted "word(value)"
-                output_wordAndValue = output_lang.index2word[topi.item()])
+                output_wordAndValue = output_lang.index2word[topi.item()]
                 output_wordAndValue += (f"({topv})")
                 decoded_words.append(output_wordAndValue)
 ##################################
@@ -384,11 +384,15 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
         return decoded_words, decoder_attentions[:di + 1]
 
 def evaluateRandomly(encoder, decoder, n=10):
-    for i in range(n): pair = random.choice(pairs)
-        print('input>', pair[0])
-        print('target=', pair[1])
+    for i in range(n): 
+        pair = random.choice(pairs)
+        print(f"input> {pair[0]}")
+        print(f"target= {pair[1]}")
         output_words, attentions = evaluate(encoder, decoder, pair[0])
         output_sentence = ' '.join(output_words)
-        print('output<', output_sentence)
+        print(f"output< {output_sentence}")
         print('')
+
+evaluateRandomly(encoder1, attn_decoder1)
+
 
