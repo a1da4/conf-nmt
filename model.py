@@ -39,7 +39,7 @@ class Lang:
         if word not in self.word2index:
             self.word2index[word] = self.n_words
             self.word2count[word] = 1
-            self.index2words[self.n_words] = word
+            self.index2word[self.n_words] = word
             self.n_words += 1
         else:
             self.word2count[word] += 1
@@ -55,10 +55,9 @@ def unicode2Ascii(s):
 # Normalization.
 def normalizeString(s):
     s = unicode2Ascii(s.lower().strip())
-    s = re.sub(r"([.!?])",r" \1",s)
-    s = re.sub(r"[^a-zA-Z.!?]+",r" ",s)
+    s = re.sub(r"([.!?])", r" \1", s)
+    s = re.sub(r"[^a-zA-Z.!?]+", r" ", s)
     return s
-
 
 # To read the data.
 # File -> lines, and split into pairs. 
@@ -66,10 +65,7 @@ def readLangs(lang1, lang2, reverse=False):
     print("Reading lines...")
     
     # Read the file and split into lines.
-    #########################################
-    # ERROR!
-    #########################################
-    lines = open("../datasets/fra.txt", encoding="utf-8").read().strip().split("\n")
+    lines = open("/lab/aida/datasets/fra-eng/fra.txt", encoding="utf-8").read().strip().split("\n")
 
     # Split every line into pairs and normalize.
     pairs = [[normalizeString(s) for s in l.split("\t")] for l in lines]
@@ -123,6 +119,7 @@ def prepareData(lang1, lang2, reverse=False):
     print(output_lang.name, output_lang.n_words)
     return input_lang, output_lang, pairs
 
+# Call "prepareData" and write languages you want to use.
 input_lang, output_lang, pairs = prepareData('eng', 'fra', True)
 print(random.choice(pairs))
 
@@ -335,8 +332,22 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lear
             plot_loss_avg = plot_loss_total / plot_every
             plot_losses.append(plot_loss_avg)
             plot_loss_total = 0
-
+    # plot
     showPlot(plot_losses)
+
+# Plot data
+import matplotlib.pyplot as plt
+plt.switch_backend('agg')
+import matplotlib.ticker as ticker
+import numpy as np
+
+def showPlot(points):
+    plt.figure()
+    fig, ax = plt.subplots()
+    # this locator puts ticks at regular intervals
+    loc = ticker.MultipleLocator(base=0.2)
+    ax.yaxis.set_major_locator(loc)
+    plt.plot(points)
 
 
 ################################################
@@ -396,6 +407,10 @@ def evaluateRandomly(encoder, decoder, n=10):
         print(f"output< {output_sentence}")
         print('')
 
+hidden_size = 256
+encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
+attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
+trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 evaluateRandomly(encoder1, attn_decoder1)
 
 
