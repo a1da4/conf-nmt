@@ -375,8 +375,7 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
         decoder_attentions = torch.zeros(max_length, max_length)
 
         for di in range(max_length):
-            decoder_output, decoder_hidden, decoder_attention = decoder(
-                decoder_input, decoder_hidden, encoder_outputs)
+            decoder_output, decoder_hidden, decoder_attention = decoder(decoder_input, decoder_hidden, encoder_outputs)
             decoder_attentions[di] = decoder_attention.data
             # topv: top value, topi: top index
             topv, topi = decoder_output.data.topk(1)
@@ -389,7 +388,7 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
 # Original part: using top Value
 # May be outputted "word(value)"
                 output_wordAndValue = output_lang.index2word[topi.item()]
-                output_wordAndValue += (f"({topv})")
+                output_wordAndValue += (f"({topv.item()})")
                 decoded_words.append(output_wordAndValue)
 ##################################
 
