@@ -403,7 +403,7 @@ def evaluateRandomly(encoder, decoder, n=10):
         print(f"target= {pair[1]}")
         output_words, attentions = evaluate(encoder, decoder, pair[0])
         output_sentence = ' '.join(output_words)
-        print(f"output< {output_sentence}")
+        print(f"output< {attentions}:{output_sentence}")
         print('')
 
 hidden_size = 256
