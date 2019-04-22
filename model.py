@@ -120,8 +120,13 @@ def prepareData(lang1, lang2, data_place, reverse=False):
     return input_lang, output_lang, pairs
 
 # Call "prepareData" and write languages you want to use.
-trainData_place = "/lab/aida/datasets/fra-eng/fra.txt"
-input_lang, output_lang, pairs = prepareData('eng', 'fra', trainData_place, True)
+#trainData_place = "/lab/aida/datasets/fra-eng/fra.txt"
+
+# if en-fra has no problem.
+# MUST USE MECAB FOR JAPANESE TEXTS.
+trainData_place = "/lab/aida/datasets/ASPEC_fixed/train-1_fixed.txt"
+#input_lang, output_lang, pairs = prepareData('eng', 'fra', trainData_place, True)
+input_lang, output_lang, pairs = prepareData('jap', 'eng', trainData_place, False)
 print(random.choice(pairs))
 
 
@@ -400,12 +405,18 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
 def evaluateRandomly(encoder, decoder, n=10):
     for i in range(n):
         # Call "prepareData" and write languages you want to use.
-        testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
+        #testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
+        
+        # if en-fra had no problem.
+        # MUST USE MECAB FOR JAPANESE TEXT.
+        testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
+
         # Input and Output lang_2 is dust.
         # Should I define new module, "prepareData_2"?
             # input: testData_place
             # output: pairs
-        input_lang_2, output_lang_2, pairs = prepareData('eng', 'fra', testData_place, True)
+        #input_lang_2, output_lang_2, pairs = prepareData('eng', 'fra', testData_place, True)
+        input_lang_2, output_lang_2, pairs = prepareData('jap', 'eng', testData_place, False)
         print(random.choice(pairs))
 
         pair = random.choice(pairs)
