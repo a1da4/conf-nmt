@@ -61,11 +61,11 @@ def normalizeString(s):
 
 # To read the data.
 # File -> lines, and split into pairs. 
-def readLangs(lang1, lang2, reverse=False):
+def readLangs(lang1, lang2, reverse=False, data_place):
     print("Reading lines...")
     
     # Read the file and split into lines.
-    lines = open("/lab/aida/datasets/fra-eng/fra.txt", encoding="utf-8").read().strip().split("\n")
+    lines = open(data_place, encoding="utf-8").read().strip().split("\n")
 
     # Split every line into pairs and normalize.
     pairs = [[normalizeString(s) for s in l.split("\t")] for l in lines]
@@ -105,8 +105,8 @@ def filterPairs(pairs):
 
 # Full process for preparing the data.(Eng -> Other)
 # If you translate Other -> Eng, you should add reverse. ("reverse=True")
-def prepareData(lang1, lang2, reverse=False):
-    input_lang, output_lang, pairs = readLangs(lang1, lang2, reverse)
+def prepareData(lang1, lang2, reverse=False, data_place):
+    input_lang, output_lang, pairs = readLangs(lang1, lang2, reverse,dataplace)
     print("Read %s sentence pairs" % len(pairs))
     pairs = filterPairs(pairs)
     print("Trimmed to %s sentence pairs" % len(pairs))
@@ -120,7 +120,8 @@ def prepareData(lang1, lang2, reverse=False):
     return input_lang, output_lang, pairs
 
 # Call "prepareData" and write languages you want to use.
-input_lang, output_lang, pairs = prepareData('eng', 'fra', True)
+trainData_place = "/lab/aida/datasets/fra-eng/fra.txt"
+input_lang, output_lang, pairs = prepareData('eng', 'fra', True, trainData_place)
 print(random.choice(pairs))
 
 
@@ -397,7 +398,16 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
         return decoded_words, decoder_attentions[:di + 1]
 
 def evaluateRandomly(encoder, decoder, n=10):
-    for i in range(n): 
+    for i in range(n):
+        # Call "prepareData" and write languages you want to use.
+        testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
+        # Input and Output lang_2 is dust.
+        # Should I define new module, "prepareData_2"?
+            # input: testData_place
+            # output: pairs
+        input_lang_2, output_lang_2, pairs = prepareData('eng', 'fra', True, testData_place)
+        print(random.choice(pairs))
+
         pair = random.choice(pairs)
         print(f"input> {pair[0]}")
         print(f"target= {pair[1]}")
