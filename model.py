@@ -105,8 +105,8 @@ def filterPairs(pairs):
 
 # Full process for preparing the data.(Eng -> Other)
 # If you translate Other -> Eng, you should add reverse. ("reverse=True")
-def prepareData(lang1, lang2, reverse=False, data_place):
-    input_lang, output_lang, pairs = readLangs(lang1, lang2, reverse,dataplace)
+def prepareData(lang1, lang2, data_place, reverse=False):
+    input_lang, output_lang, pairs = readLangs(lang1, lang2, data_place, reverse)
     print("Read %s sentence pairs" % len(pairs))
     pairs = filterPairs(pairs)
     print("Trimmed to %s sentence pairs" % len(pairs))
