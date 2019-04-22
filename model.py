@@ -61,7 +61,7 @@ def normalizeString(s):
 
 # To read the data.
 # File -> lines, and split into pairs. 
-def readLangs(lang1, lang2, reverse=False, data_place):
+def readLangs(lang1, lang2, data_place, reverse=False):
     print("Reading lines...")
     
     # Read the file and split into lines.
@@ -121,7 +121,7 @@ def prepareData(lang1, lang2, reverse=False, data_place):
 
 # Call "prepareData" and write languages you want to use.
 trainData_place = "/lab/aida/datasets/fra-eng/fra.txt"
-input_lang, output_lang, pairs = prepareData('eng', 'fra', True, trainData_place)
+input_lang, output_lang, pairs = prepareData('eng', 'fra', trainData_place, True)
 print(random.choice(pairs))
 
 
@@ -405,7 +405,7 @@ def evaluateRandomly(encoder, decoder, n=10):
         # Should I define new module, "prepareData_2"?
             # input: testData_place
             # output: pairs
-        input_lang_2, output_lang_2, pairs = prepareData('eng', 'fra', True, testData_place)
+        input_lang_2, output_lang_2, pairs = prepareData('eng', 'fra', testData_place, True)
         print(random.choice(pairs))
 
         pair = random.choice(pairs)
