@@ -68,8 +68,8 @@ def readLangs(lang1, lang2, data_place, reverse=False):
     lines = open(data_place, encoding="utf-8").read().strip().split("\n")
 
     # Split every line into pairs and normalize.
-    pairs = [[normalizeString(s) for s in l.split("\t")] for l in lines]
-    
+    #pairs = [[normalizeString(s) for s in l.split("\t")] for l in lines]
+    pairs = [[s.lower().strip() for s in l.split("\t")] for l in lines]
     # Reverse pairs, make Lang instances.
     if reverse:
         pairs = [list(reversed(p)) for p in pairs]
@@ -81,9 +81,12 @@ def readLangs(lang1, lang2, data_place, reverse=False):
 
     return input_lang, output_lang, pairs
 
+############################
+# Not need to use?
 
-# To train quickly, we prepare the data set.
-MAX_LENGTH = 10
+
+#MAX_LENGTH = 10
+MAX_LENGTH = 20
 
 eng_prefixes = (
     "i am", "i m ",
@@ -94,6 +97,7 @@ eng_prefixes = (
     "they are", "they re "
 )
 
+
 def filterPair(p):
     return len(p[0].split(" ")) < MAX_LENGTH and \
         len(p[1].split(" ")) < MAX_LENGTH and \
@@ -102,6 +106,7 @@ def filterPair(p):
 def filterPairs(pairs):
     return [pair for pair in pairs if filterPair(pair)]
 
+############################
 
 # Full process for preparing the data.(Eng -> Other)
 # If you translate Other -> Eng, you should add reverse. ("reverse=True")
@@ -306,7 +311,7 @@ def timeSince(since, percent):
     rs = es - s
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
 
-def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, learning_rate=0.01):
+def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
     start = time.time()
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
@@ -314,8 +319,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lear
 
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
-    training_pairs = [tensorsFromPair(random.choice(pairs))
-                      for i in range(n_iters)]
+    training_pairs = [tensorsFromPair(random.choice(pairs)) for i in range(n_iters)]
     criterion = nn.NLLLoss()
 
     for iter in range(1, n_iters + 1):
@@ -323,8 +327,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lear
         input_tensor = training_pair[0]
         target_tensor = training_pair[1]
 
-        loss = train(input_tensor, target_tensor, encoder,
-                     decoder, encoder_optimizer, decoder_optimizer, criterion)
+        loss = train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
         print_loss_total += loss
         plot_loss_total += loss
 
@@ -333,28 +336,6 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lear
             print_loss_total = 0
             print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters),
                                          iter, iter / n_iters * 100, print_loss_avg))
-
-        if iter % plot_every == 0:
-            plot_loss_avg = plot_loss_total / plot_every
-            plot_losses.append(plot_loss_avg)
-            plot_loss_total = 0
-    # plot
-    showPlot(plot_losses)
-
-# Plot data
-import matplotlib.pyplot as plt
-plt.switch_backend('agg')
-import matplotlib.ticker as ticker
-import numpy as np
-
-def showPlot(points):
-    plt.figure()
-    fig, ax = plt.subplots()
-    # this locator puts ticks at regular intervals
-    loc = ticker.MultipleLocator(base=0.2)
-    ax.yaxis.set_major_locator(loc)
-    plt.plot(points)
-
 
 ################################################
 # Evaluation
@@ -403,20 +384,14 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
         return decoded_words, decoder_attentions[:di + 1]
 
 def evaluateRandomly(encoder, decoder, n=10):
-    for i in range(n):
-        # Call "prepareData" and write languages you want to use.
-        #testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
-        
-        # if en-fra had no problem.
-        # MUST USE MECAB FOR JAPANESE TEXT.
-        testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
+    # Call "prepareData" and write languages you want to use.
+    #testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
+    testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
 
-        # Input and Output lang_2 is dust.
-        # Should I define new module, "prepareData_2"?
-            # input: testData_place
-            # output: pairs
-        #input_lang_2, output_lang_2, pairs = prepareData('eng', 'fra', testData_place, True)
-        input_lang_2, output_lang_2, pairs = prepareData('jap', 'eng', testData_place, False)
+    #input_lang_2, output_lang_2, pairs = prepareData('eng', 'fra', testData_place, True)
+    input_lang_2, output_lang_2, pairs = prepareData('jap', 'eng', testData_place, False)
+    
+    for i in range(n):
         print(random.choice(pairs))
 
         pair = random.choice(pairs)
