@@ -129,8 +129,9 @@ def prepareData(lang1, lang2, data_place, reverse=False):
 #trainData_place = "/lab/aida/datasets/fra-eng/fra.txt"
 
 # if en-fra has no problem.
-# MUST USE MECAB FOR JAPANESE TEXTS.
+#trainData_place = "/lab/aida/datasets/fra-eng/fra.txt"
 trainData_place = "/lab/aida/datasets/ASPEC_fixed/train-1_fixed.txt"
+
 #input_lang, output_lang, pairs = prepareData('eng', 'fra', trainData_place, True)
 input_lang, output_lang, pairs = prepareData('jap', 'eng', trainData_place, False)
 print(random.choice(pairs))
