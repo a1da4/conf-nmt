@@ -339,6 +339,19 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
             print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters),
                                          iter, iter / n_iters * 100, print_loss_avg))
 
+
+################################################
+# Validation
+################################################
+
+# validate each epoch
+# code like evaluation
+
+devData_place = "/lab/aida/datasets/ASPEC_fixed/dev.txt"
+input_lang_3, output_lang_3, pairs_dev = prepareData("jap", "eng", devData_place, False)
+
+
+
 ################################################
 # Evaluation
 ################################################
@@ -388,13 +401,15 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
 def evaluateRandomly(encoder, decoder, n=10):
     # Call "prepareData" and write languages you want to use.
     #testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
-    testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
 
+    #testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
+    testData_place = "/lab/aida/datasets/ASPEC_fixed/train_fixed.txt"
+    
     #input_lang_2, output_lang_2, pairs = prepareData('eng', 'fra', testData_place, True)
     input_lang_2, output_lang_2, pairs = prepareData('jap', 'eng', testData_place, False)
     
     for i in range(n):
-        print(random.choice(pairs))
+        #print(random.choice(pairs))
 
         pair = random.choice(pairs)
         print(f"input> {pair[0]}")
