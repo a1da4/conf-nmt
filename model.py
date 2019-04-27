@@ -321,7 +321,12 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
 
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
-    training_pairs = [tensorsFromPair(random.choice(pairs)) for i in range(n_iters)]
+    #training_pairs = [tensorsFromPair(random.choice(pairs)) for i in range(n_iters)]
+    #######################
+    # changed   
+    training_pairs = [tensorsFromPair(pair) for pair in pairs]
+    n_iters = len(pairs)
+    #######################
     criterion = nn.NLLLoss()
 
     for iter in range(1, n_iters + 1):
@@ -347,7 +352,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
 # validate each epoch
 # code like evaluation
 
-devData_place = "/lab/aida/datasets/ASPEC_fixed/dev.txt"
+devData_place = "/lab/aida/datasets/ASPEC_fixed/dev_fixed.txt"
 input_lang_3, output_lang_3, pairs_dev = prepareData("jap", "eng", devData_place, False)
 
 
