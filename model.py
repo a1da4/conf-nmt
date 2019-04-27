@@ -403,7 +403,7 @@ def evaluateRandomly(encoder, decoder, n=10):
     #testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
 
     #testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
-    testData_place = "/lab/aida/datasets/ASPEC_fixed/train_fixed.txt"
+    testData_place = "/lab/aida/datasets/ASPEC_fixed/train-1_fixed.txt"
     
     #input_lang_2, output_lang_2, pairs = prepareData('eng', 'fra', testData_place, True)
     input_lang_2, output_lang_2, pairs = prepareData('jap', 'eng', testData_place, False)
