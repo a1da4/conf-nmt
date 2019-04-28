@@ -393,11 +393,23 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
                 #decoded_words.append(output_lang.index2word[topi.item()])
 ##################################
 # Original part: using top Value
-# May be outputted "word(value)"
+
+# Calculate variance top 5 and 3
+                top5_value, top5_index = decoder_output.data.topk(5)
+                
+                top5_mean = top5_value.mean()
+                top3_mean = top5_value[:3].mean()
+                
+                top5_var = sum(abs(top5_value - top5_mean)**2) / 5
+                top3_var = sum(abs(top5_value[:3] - top3_mean)**2) / 5
+                
+# May be outputted "word(value,top3,top5)"
                 output_wordAndValue = output_lang.index2word[topi.item()]
-                output_wordAndValue += (f"({topv.item()})")
+                output_wordAndValue += (f"(P:{topv.item()},Vtop3:{top3_var},Vtop5:{top5_var})")
                 decoded_words.append(output_wordAndValue)
+
 ##################################
+                
 
             decoder_input = topi.squeeze().detach()
 
@@ -420,8 +432,8 @@ def evaluateRandomly(encoder, decoder, n=10):
         print(f"input> {pair[0]}")
         print(f"target= {pair[1]}")
         output_words, attentions = evaluate(encoder, decoder, pair[0])
-        output_sentence = ' '.join(output_words)
-        print(f"output< {output_sentence}")
+        output_sentence = '\n'.join(output_words)
+        print(f"output<\n {output_sentence}")
         print('')
 
 hidden_size = 256
