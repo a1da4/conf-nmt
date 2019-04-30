@@ -204,8 +204,7 @@ class AttnDecoderRNN(nn.Module):
 
         attn_weights = F.softmax(
             self.attn(torch.cat((embedded[0], hidden[0]), 1)), dim=1)
-        attn_applied = torch.bmm(attn_weights.unsqueeze(0),
-                                 encoder_outputs.unsqueeze(0))
+        attn_applied = torch.bmm(attn_weights.unsqueeze(0), encoder_outputs.unsqueeze(0))
 
         output = torch.cat((embedded[0], attn_applied[0]), 1)
         output = self.attn_combine(output).unsqueeze(0)
@@ -351,10 +350,10 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
 
 # validate each epoch
 # code like evaluation
-
+"""
 devData_place = "/lab/aida/datasets/ASPEC_fixed/dev_fixed.txt"
 input_lang_3, output_lang_3, pairs_dev = prepareData("jap", "eng", devData_place, False)
-
+"""
 
 
 ################################################
@@ -396,15 +395,21 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
 
 # Calculate variance top 5 and 3
                 top5_value, top5_index = decoder_output.data.topk(5)
+                #print(top5_value.size())
+
+                # may be [~][topk] or [topk][~]
+                #top5_mean = top5_value[0].mean()
+                #top3_mean = top5_value[0][:3].mean()
                 
-                top5_mean = top5_value.mean()
-                top3_mean = top5_value[:3].mean()
+                #top5_var = sum(abs(top5_value[0] - top5_mean)**2) / 5
+                #top3_var = sum(abs(top5_value[0][:3] - top3_mean)**2) / 3
                 
-                top5_var = sum(abs(top5_value - top5_mean)**2) / 5
-                top3_var = sum(abs(top5_value[:3] - top3_mean)**2) / 5
-                
+                top5_var = sum(abs(top5_value[0] - topv.item())**2) / 5
+                top3_var = sum(abs(top5_value[0][:3] - topv.item())**2) / 3
+
 # May be outputted "word(value,top3,top5)"
                 output_wordAndValue = output_lang.index2word[topi.item()]
+                #output_wordAndValue += (f"(P:{topv.item()},Vtop3:{top3_var.item()},Vtop5:{top5_var.item()})")
                 output_wordAndValue += (f"(P:{topv.item()},Vtop3:{top3_var},Vtop5:{top5_var})")
                 decoded_words.append(output_wordAndValue)
 
@@ -420,10 +425,15 @@ def evaluateRandomly(encoder, decoder, n=10):
     #testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
 
     #testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
-    testData_place = "/lab/aida/datasets/ASPEC_fixed/train-1_fixed.txt"
+    
+    #############################################################################
+    # If you use SAME datasets for train and test, you don't need to use this.
+    #testData_place = "/lab/aida/datasets/ASPEC_fixed/train-1_fixed.txt"
     
     #input_lang_2, output_lang_2, pairs = prepareData('eng', 'fra', testData_place, True)
-    input_lang_2, output_lang_2, pairs = prepareData('jap', 'eng', testData_place, False)
+    #input_lang_2, output_lang_2, pairs = prepareData('jap', 'eng', testData_place, False)
+    
+    #############################################################################
     
     for i in range(n):
         #print(random.choice(pairs))
