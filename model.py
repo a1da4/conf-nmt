@@ -351,8 +351,19 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
 # validate each epoch
 # code like evaluation
 """
-devData_place = "/lab/aida/datasets/ASPEC_fixed/dev_fixed.txt"
-input_lang_3, output_lang_3, pairs_dev = prepareData("jap", "eng", devData_place, False)
+def validation():
+    devData_place = "/lab/aida/datasets/ASPEC_fixed/dev_fixed.txt"
+    input_lang_3, output_lang_3, pairs_val = prepareData("jap", "eng", devData_place, False)
+    val_iters = len(pairs_val)
+    loss_total = 0.
+
+    for iter in range(1, val_iters+1):
+        val_pair = pairs_val[iter - 1]
+        input_tensor = val_pair[0]
+        output_tensor = val_pair[1]
+        loss = train()
+        loss_total += loss
+
 """
 
 
