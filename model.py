@@ -415,8 +415,8 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
                 #top5_var = sum(abs(top5_value[0] - top5_mean)**2) / 5
                 #top3_var = sum(abs(top5_value[0][:3] - top3_mean)**2) / 3
                 
-                top5_var = sum(abs(top5_value[0] - topv.item())**2) / 5
-                top3_var = sum(abs(top5_value[0][:3] - topv.item())**2) / 3
+                top5_var = sum(abs(top5_value[0] - topv.item())**2) / 4
+                top3_var = sum(abs(top5_value[0][:3] - topv.item())**2) / 2
 
 # May be outputted "word(value,top3,top5)"
                 output_wordAndValue = output_lang.index2word[topi.item()]
