@@ -82,33 +82,17 @@ def readLangs(lang1, lang2, data_place, reverse=False):
 
     return input_lang, output_lang, pairs
 
-############################
-# Not need to use?
 
 
-#MAX_LENGTH = 10
 MAX_LENGTH = 20
-
-"""
-eng_prefixes = (
-    "i am", "i m ",
-    "he is", "he s ",
-    "she is", "she s ",
-    "you are", "you re ",
-    "we are", "we re ",
-    "they are", "they re "
-)
-"""
 
 def filterPair(p):
     return len(p[0].split(" ")) < MAX_LENGTH and \
-        len(p[1].split(" ")) < MAX_LENGTH #and \
-           # p[1].startswith(eng_prefixes)
+        len(p[1].split(" ")) < MAX_LENGTH 
 
 def filterPairs(pairs):
     return [pair for pair in pairs if filterPair(pair)]
 
-############################
 
 # Full process for preparing the data.(Eng -> Other)
 # If you translate Other -> Eng, you should add reverse. ("reverse=True")
@@ -125,6 +109,7 @@ def prepareData(lang1, lang2, data_place, reverse=False):
     print(input_lang.name, input_lang.n_words)
     print(output_lang.name, output_lang.n_words)
     return input_lang, output_lang, pairs
+
 
 # Call "prepareData" and write languages you want to use.
 #trainData_place = "/lab/aida/datasets/fra-eng/fra.txt"
@@ -354,7 +339,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
 # calculate loss for each epoch
 
 """
-def validation(encoder, decoder, learning_rate):
+def validation(encoder, decoder, learning_rate=0.01):
     devData_place = "/lab/aida/datasets/ASPEC_fixed/dev_fixed.txt"
     input_lang_3, output_lang_3, pairs_val = prepareData("jap", "eng", devData_place, False)
     val_iters = len(pairs_val)
@@ -469,10 +454,27 @@ def evaluateRandomly(encoder, decoder, n=10):
         print(f"output<\n {output_sentence}")
         print('')
 
+
+
 hidden_size = 256
+
+best_val_loss = None
+
 encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
 attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
 trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
+
+val_loss = validation(encoder1, attn_decoder1)
+if not best_val_loss or val_loss < best_val_loss:
+    # save model and val_loss
+    best_val_loss = val_loss
+    torch.save(encoder1)
+    torch.save(attn_decoder1)
+
+# load the least val_loss model
+encoder1 = torch.load(encoder1)
+attn_decoder1 = torch.load(attn_decoder1)
+
 evaluateRandomly(encoder1, attn_decoder1)
 
 
