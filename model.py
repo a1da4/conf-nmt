@@ -1,4 +1,5 @@
 # The model of NMT
+# Seq2seq + Attention
 
 from __future__ import unicode_literals, print_function, division
 from io import open
@@ -316,7 +317,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
     start = time.time()
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
-    plot_loss_total = 0  # Reset every plot_every
+    #plot_loss_total = 0  # Reset every plot_every
 
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
@@ -335,7 +336,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
 
         loss = train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
         print_loss_total += loss
-        plot_loss_total += loss
+        #plot_loss_total += loss
 
         if iter % print_every == 0:
             print_loss_avg = print_loss_total / print_every
@@ -350,19 +351,30 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
 
 # validate each epoch
 # code like evaluation
+# calculate loss for each epoch
+
 """
-def validation():
+def validation(encoder, decoder, learning_rate):
     devData_place = "/lab/aida/datasets/ASPEC_fixed/dev_fixed.txt"
     input_lang_3, output_lang_3, pairs_val = prepareData("jap", "eng", devData_place, False)
     val_iters = len(pairs_val)
     loss_total = 0.
+    
+    encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
+    decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
+
+    criterion = nn.NLLLoss()
 
     for iter in range(1, val_iters+1):
         val_pair = pairs_val[iter - 1]
         input_tensor = val_pair[0]
         output_tensor = val_pair[1]
-        loss = train()
+        loss = train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
         loss_total += loss
+    
+    loss_ave = loss_total / val_iters
+    
+    return loss_ave
 
 """
 
