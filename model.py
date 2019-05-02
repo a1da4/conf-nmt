@@ -451,7 +451,7 @@ def evaluateRandomly(encoder, decoder, n=10):
         print(f"target= {pair[1]}")
         output_words, attentions = evaluate(encoder, decoder, pair[0])
         output_sentence = '\n'.join(output_words)
-        print(f"output<\n {output_sentence}")
+        print(f"output<\n{output_sentence}")
         print('')
 
 
