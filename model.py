@@ -468,12 +468,12 @@ val_loss = validation(encoder1, attn_decoder1)
 if not best_val_loss or val_loss < best_val_loss:
     # save model and val_loss
     best_val_loss = val_loss
-    torch.save(encoder1)
-    torch.save(attn_decoder1)
+    #torch.save(encoder1)
+    #torch.save(attn_decoder1)
 
 # load the least val_loss model
-encoder1 = torch.load(encoder1)
-attn_decoder1 = torch.load(attn_decoder1)
+#encoder1 = torch.load(encoder1)
+#attn_decoder1 = torch.load(attn_decoder1)
 
 evaluateRandomly(encoder1, attn_decoder1)
 
