@@ -336,7 +336,7 @@ def validation(encoder, decoder, devData_place, learning_rate=0.01):
     for iter in range(1, val_iters+1):
         val_pair = pairs_val[iter - 1]
         input_tensor = val_pair[0]
-        output_tensor = val_pair[1]
+        target_tensor = val_pair[1]
         loss = train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
         loss_total += loss
     
@@ -455,7 +455,7 @@ if __name__ == "__main__":
     ######################################
     # Validation part
     ######################################
-    devData_plce = "/lab/aida/datasets/fra-eng/fra.txt"
+    devData_place = "/lab/aida/datasets/fra-eng/fra.txt"
     #devData_place = "/lab/aida/datasets/ASPEC_fixed/dev_fixed.txt"
     
     val_loss = validation(encoder1, attn_decoder1, devData_place)
