@@ -327,6 +327,7 @@ def validation(encoder, decoder, devData_place, learning_rate=0.01):
     input_lang_3, output_lang_3, pairs_val = prepareData("jap", "eng", devData_place, False)
     val_iters = len(pairs_val)
     loss_total = 0.
+    pairs_val = [tensorsFromPair(pair) for pair in pairs_val]
     
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
