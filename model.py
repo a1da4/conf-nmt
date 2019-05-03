@@ -7,6 +7,8 @@ import unicodedata
 import string
 import re
 import random
+import time
+import math 
 
 import torch
 import torch.nn as nn
@@ -82,10 +84,6 @@ def readLangs(lang1, lang2, data_place, reverse=False):
 
     return input_lang, output_lang, pairs
 
-
-
-MAX_LENGTH = 20
-
 def filterPair(p):
     return len(p[0].split(" ")) < MAX_LENGTH and \
         len(p[1].split(" ")) < MAX_LENGTH 
@@ -110,14 +108,6 @@ def prepareData(lang1, lang2, data_place, reverse=False):
     print(output_lang.name, output_lang.n_words)
     return input_lang, output_lang, pairs
 
-
-# Call "prepareData" and write languages you want to use.
-#trainData_place = "/lab/aida/datasets/fra-eng/fra.txt"
-trainData_place = "/lab/aida/datasets/ASPEC_fixed/train-1_fixed.txt"
-
-#input_lang, output_lang, pairs = prepareData('eng', 'fra', trainData_place, True)
-input_lang, output_lang, pairs = prepareData('jap', 'eng', trainData_place, False)
-print(random.choice(pairs))
 
 
 ################################################
@@ -223,8 +213,6 @@ def tensorsFromPair(pair):
     return (input_tensor, target_tensor)
 
 
-# Training the model
-teacher_forcing_ratio = 0.5
 
 def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, max_length=MAX_LENGTH):
     encoder_hidden = encoder.initHidden()
@@ -279,8 +267,6 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
 
 
 # Measure time and average loss.
-import time
-import math
 
 def asMinutes(s):
     m = math.floor(s / 60)
@@ -335,9 +321,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
 # code like evaluation
 # calculate loss for each epoch
 
-"""
-def validation(encoder, decoder, learning_rate=0.01):
-    devData_place = "/lab/aida/datasets/ASPEC_fixed/dev_fixed.txt"
+def validation(encoder, decoder, learning_rate=0.01, devData_place):
     input_lang_3, output_lang_3, pairs_val = prepareData("jap", "eng", devData_place, False)
     val_iters = len(pairs_val)
     loss_total = 0.
@@ -358,7 +342,6 @@ def validation(encoder, decoder, learning_rate=0.01):
     
     return loss_ave
 
-"""
 
 
 ################################################
@@ -393,7 +376,7 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
             if topi.item() == EOS_token:
                 decoded_words.append('<EOS>')
                 break
-            else:
+                else:
                 #decoded_words.append(output_lang.index2word[topi.item()])
 ##################################
 # Original part: using top Value
@@ -425,15 +408,11 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
 
         return decoded_words, decoder_attentions[:di + 1]
 
-def evaluateRandomly(encoder, decoder, n=10):
+def evaluateRandomly(encoder, decoder, testData_place,  n=10):
     # Call "prepareData" and write languages you want to use.
-    #testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
-
-    #testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
     
     #############################################################################
     # If you use SAME datasets for train and test, you don't need to use this.
-    #testData_place = "/lab/aida/datasets/ASPEC_fixed/train-1_fixed.txt"
     
     #input_lang_2, output_lang_2, pairs = prepareData('eng', 'fra', testData_place, True)
     #input_lang_2, output_lang_2, pairs = prepareData('jap', 'eng', testData_place, False)
@@ -441,8 +420,6 @@ def evaluateRandomly(encoder, decoder, n=10):
     #############################################################################
     
     for i in range(n):
-        #print(random.choice(pairs))
-
         pair = random.choice(pairs)
         print(f"input> {pair[0]}")
         print(f"target= {pair[1]}")
@@ -453,25 +430,52 @@ def evaluateRandomly(encoder, decoder, n=10):
 
 
 
-hidden_size = 256
+if __name__ == "__main__":
+    MAX_LENGTH = 20
+    hidden_size = 256
+    teacher_forcing_ratio = 0.5
 
-best_val_loss = None
+    best_val_loss = None
 
-encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
-attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
-trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
+    #####################################
+    # Training part
+    #####################################
+    trainData_place = "/lab/aida/datasets/fra-eng/fra.txt"
+    #trainData_place = "/lab/aida/datasets/ASPEC_fixed/train-1_fixed.txt"
+    
+    input_lang, output_lang, pairs = prepareData('eng', 'fra', trainData_place, True)
+    #input_lang, output_lang, pairs = prepareData('jap', 'eng', trainData_place, False)
 
-val_loss = validation(encoder1, attn_decoder1)
-if not best_val_loss or val_loss < best_val_loss:
-    # save model and val_loss
-    best_val_loss = val_loss
-    #torch.save(encoder1)
-    #torch.save(attn_decoder1)
+    encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
+    attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
+    trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
-# load the least val_loss model
-#encoder1 = torch.load(encoder1)
-#attn_decoder1 = torch.load(attn_decoder1)
 
-evaluateRandomly(encoder1, attn_decoder1)
+    ######################################
+    # Validation part
+    ######################################
+    devData_plce = "/lab/aida/datasets/fra-eng/fra.txt"
+    #devData_place = "/lab/aida/datasets/ASPEC_fixed/dev_fixed.txt"
+    
+    val_loss = validation(encoder1, attn_decoder1, devData_place)
+    
+    if not best_val_loss or val_loss < best_val_loss:
+        # save model and val_loss
+        best_val_loss = val_loss
+        torch.save(encoder1.state_dict(), "encoder.pth")
+        torch.save(attn_decoder1.state_dict(), "decoder.pth")
+
+
+    ######################################
+    # Test part
+    ######################################
+    # load the least val_loss model
+    encoder1 = torch.load("encoder.pth")
+    attn_decoder1 = torch.load("decoder.pth")
+    
+    testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
+    #testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
+
+    evaluateRandomly(encoder1, attn_decoder1, testData_place)
 
 
