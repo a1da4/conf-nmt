@@ -114,6 +114,8 @@ def prepareData(lang1, lang2, data_place, reverse=False):
 # Seq2Seq model
 ################################################
 
+MAX_LENGTH = 20
+
 # The Encoder
 class EncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size):
@@ -321,7 +323,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
 # code like evaluation
 # calculate loss for each epoch
 
-def validation(encoder, decoder, learning_rate=0.01, devData_place):
+def validation(encoder, decoder, devData_place, learning_rate=0.01):
     input_lang_3, output_lang_3, pairs_val = prepareData("jap", "eng", devData_place, False)
     val_iters = len(pairs_val)
     loss_total = 0.
@@ -376,7 +378,7 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
             if topi.item() == EOS_token:
                 decoded_words.append('<EOS>')
                 break
-                else:
+            else:
                 #decoded_words.append(output_lang.index2word[topi.item()])
 ##################################
 # Original part: using top Value
@@ -431,7 +433,6 @@ def evaluateRandomly(encoder, decoder, testData_place,  n=10):
 
 
 if __name__ == "__main__":
-    MAX_LENGTH = 20
     hidden_size = 256
     teacher_forcing_ratio = 0.5
 
