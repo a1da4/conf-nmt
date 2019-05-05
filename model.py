@@ -443,7 +443,7 @@ if __name__ == "__main__":
     #testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
 
    
-   #####################################
+    ####################################
     # Prepare Data
     ####################################
     input_lang, output_lang, pairs = prepareData('eng', 'fra', trainData_place, True)
@@ -456,7 +456,7 @@ if __name__ == "__main__":
     #input_lang_test, output_lang_test, pairs_test = prepareData('jap', 'eng', testData_place, False)
     
    
-   for x in epoch:
+    for x in range(epoch):
         #####################################
         # Training part
         ##################################### 
@@ -482,7 +482,7 @@ if __name__ == "__main__":
                 break
 
    
-   ######################################
+    ######################################
     # Test part
     ######################################
     # load the least val_loss model
