@@ -209,7 +209,7 @@ def tensorFromSentence(lang, sentence):
     return torch.tensor(indexes, dtype=torch.long, device=device).view(-1, 1)
 
 # Return input and target tensor
-def tensorsFromPair(pair):
+def tensorsFromPair(pair, input_lang, output_lang):
     input_tensor = tensorFromSentence(input_lang, pair[0])
     target_tensor = tensorFromSentence(output_lang, pair[1])
     return (input_tensor, target_tensor)
@@ -294,7 +294,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
     #training_pairs = [tensorsFromPair(random.choice(pairs)) for i in range(n_iters)]
     #######################
     # changed   
-    training_pairs = [tensorsFromPair(pair) for pair in pairs]
+    training_pairs = [tensorsFromPair(pair, input_lang, output_lang) for pair in pairs]
     n_iters = len(pairs)
     #######################
     criterion = nn.NLLLoss()
@@ -324,10 +324,9 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
 # calculate loss for each epoch
 
 def validation(encoder, decoder, devData_place, learning_rate=0.01):
-    input_lang_3, output_lang_3, pairs_val = prepareData("jap", "eng", devData_place, False)
     val_iters = len(pairs_val)
     loss_total = 0.
-    pairs_val = [tensorsFromPair(pair) for pair in pairs_val]
+    pairs_val = [tensorsFromPair(pair, input_lang_val, output_lang_val) for pair in pairs_val]
     
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
@@ -353,15 +352,14 @@ def validation(encoder, decoder, devData_place, learning_rate=0.01):
 
 def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
     with torch.no_grad():
-        input_tensor = tensorFromSentence(input_lang, sentence)
+        input_tensor = tensorFromSentence(input_lang_test, sentence)
         input_length = input_tensor.size()[0]
         encoder_hidden = encoder.initHidden()
 
         encoder_outputs = torch.zeros(max_length, encoder.hidden_size, device=device)
 
         for ei in range(input_length):
-            encoder_output, encoder_hidden = encoder(input_tensor[ei],
-                                                     encoder_hidden)
+            encoder_output, encoder_hidden = encoder(input_tensor[ei],encoder_hidden)
             encoder_outputs[ei] += encoder_output[0, 0]
 
         decoder_input = torch.tensor([[SOS_token]], device=device)  # SOS
@@ -399,7 +397,7 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
                 top3_var = sum(abs(top5_value[0][:3] - topv.item())**2) / 2
 
 # May be outputted "word(value,top3,top5)"
-                output_wordAndValue = output_lang.index2word[topi.item()]
+                output_wordAndValue = output_lang_test.index2word[topi.item()]
                 #output_wordAndValue += (f"(P:{topv.item()},Vtop3:{top3_var.item()},Vtop5:{top5_var.item()})")
                 output_wordAndValue += (f"(P:{topv.item()},Vtop3:{top3_var},Vtop5:{top5_var})")
                 decoded_words.append(output_wordAndValue)
@@ -412,15 +410,6 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
         return decoded_words, decoder_attentions[:di + 1]
 
 def evaluateRandomly(encoder, decoder, testData_place,  n=10):
-    # Call "prepareData" and write languages you want to use.
-    
-    #############################################################################
-    # If you use SAME datasets for train and test, you don't need to use this.
-    
-    #input_lang_2, output_lang_2, pairs = prepareData('eng', 'fra', testData_place, True)
-    #input_lang_2, output_lang_2, pairs = prepareData('jap', 'eng', testData_place, False)
-    
-    #############################################################################
     
     for i in range(n):
         pair = random.choice(pairs)
@@ -459,6 +448,9 @@ if __name__ == "__main__":
     devData_place = "/lab/aida/datasets/fra-eng/fra.txt"
     #devData_place = "/lab/aida/datasets/ASPEC_fixed/dev_fixed.txt"
     
+    input_lang_val, output_lang_val, pairs_val = prepareData("eng", "fra", devData_place, True)
+    #input_lang_val, output_lang_val, pairs_val = prepareData("jap", "eng", devData_place, False)
+    
     val_loss = validation(encoder1, attn_decoder1, devData_place)
     
     if not best_val_loss or val_loss < best_val_loss:
@@ -478,6 +470,9 @@ if __name__ == "__main__":
     testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
     #testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
 
+    input_lang_test, output_lang_test, pairs = prepareData('eng', 'fra', testData_place, True)
+    #input_lang_test, output_lang_test, pairs = prepareData('jap', 'eng', testData_place, False)
+    
     evaluateRandomly(encoder1, attn_decoder1, testData_place)
 
 
