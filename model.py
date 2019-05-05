@@ -379,10 +379,11 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
                 break
             else:
                 #decoded_words.append(output_lang.index2word[topi.item()])
-##################################
-# Original part: using top Value
+                
+                ##################################
+                # Original part: using top Value
 
-# Calculate variance top 5 and 3
+                # Calculate variance top 5 and 3
                 top5_value, top5_index = decoder_output.data.topk(5)
                 #print(top5_value.size())
 
@@ -396,13 +397,13 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
                 top5_var = sum(abs(top5_value[0] - topv.item())**2) / 4
                 top3_var = sum(abs(top5_value[0][:3] - topv.item())**2) / 2
 
-# May be outputted "word(value,top3,top5)"
+                # May be outputted "word(value,top3,top5)"
                 output_wordAndValue = output_lang_test.index2word[topi.item()]
                 #output_wordAndValue += (f"(P:{topv.item()},Vtop3:{top3_var.item()},Vtop5:{top5_var.item()})")
                 output_wordAndValue += (f"(P:{topv.item()},Vtop3:{top3_var},Vtop5:{top5_var})")
                 decoded_words.append(output_wordAndValue)
 
-##################################
+                ##################################
                 
 
             decoder_input = topi.squeeze().detach()
@@ -412,7 +413,7 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
 def evaluateRandomly(encoder, decoder, testData_place,  n=10):
     
     for i in range(n):
-        pair = random.choice(pairs)
+        pair = random.choice(pairs_test)
         print(f"input> {pair[0]}")
         print(f"target= {pair[1]}")
         output_words, attentions = evaluate(encoder, decoder, pair[0])
@@ -425,54 +426,69 @@ def evaluateRandomly(encoder, decoder, testData_place,  n=10):
 if __name__ == "__main__":
     hidden_size = 256
     teacher_forcing_ratio = 0.5
-
+    epoch = 1000
     best_val_loss = None
+    unupdate = 0
 
     #####################################
-    # Training part
+    # Data place
     #####################################
     trainData_place = "/lab/aida/datasets/fra-eng/fra.txt"
     #trainData_place = "/lab/aida/datasets/ASPEC_fixed/train-1_fixed.txt"
     
-    input_lang, output_lang, pairs = prepareData('eng', 'fra', trainData_place, True)
-    #input_lang, output_lang, pairs = prepareData('jap', 'eng', trainData_place, False)
-
-    encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
-    attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
-    trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
-
-
-    ######################################
-    # Validation part
-    ######################################
     devData_place = "/lab/aida/datasets/fra-eng/fra.txt"
     #devData_place = "/lab/aida/datasets/ASPEC_fixed/dev_fixed.txt"
     
+    testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
+    #testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
+
+   
+   #####################################
+    # Prepare Data
+    ####################################
+    input_lang, output_lang, pairs = prepareData('eng', 'fra', trainData_place, True)
+    #input_lang, output_lang, pairs = prepareData('jap', 'eng', trainData_place, False)
+
     input_lang_val, output_lang_val, pairs_val = prepareData("eng", "fra", devData_place, True)
     #input_lang_val, output_lang_val, pairs_val = prepareData("jap", "eng", devData_place, False)
     
-    val_loss = validation(encoder1, attn_decoder1, devData_place)
+    input_lang_test, output_lang_test, pairs_test = prepareData('eng', 'fra', testData_place, True)
+    #input_lang_test, output_lang_test, pairs_test = prepareData('jap', 'eng', testData_place, False)
     
-    if not best_val_loss or val_loss < best_val_loss:
-        # save model and val_loss
-        best_val_loss = val_loss
-        torch.save(encoder1.state_dict(), "encoder.pth")
-        torch.save(attn_decoder1.state_dict(), "decoder.pth")
+   
+   for x in epoch:
+        #####################################
+        # Training part
+        ##################################### 
+        encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
+        attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
+        trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
 
-    ######################################
+        ######################################
+        # Validation part
+        ######################################
+        val_loss = validation(encoder1, attn_decoder1, devData_place)
+    
+        if not best_val_loss or val_loss < best_val_loss:
+            # save model and val_loss
+            best_val_loss = val_loss
+            torch.save(encoder1.state_dict(), "encoder.pth")
+            torch.save(attn_decoder1.state_dict(), "decoder.pth")
+            unupdate = 0
+        else:
+            unupdate += 1
+            if unupdate >= 3:
+                break
+
+   
+   ######################################
     # Test part
     ######################################
     # load the least val_loss model
     encoder1 = torch.load("encoder.pth")
     attn_decoder1 = torch.load("decoder.pth")
-    
-    testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
-    #testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
-
-    input_lang_test, output_lang_test, pairs = prepareData('eng', 'fra', testData_place, True)
-    #input_lang_test, output_lang_test, pairs = prepareData('jap', 'eng', testData_place, False)
-    
+     
     evaluateRandomly(encoder1, attn_decoder1, testData_place)
 
 
