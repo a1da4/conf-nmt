@@ -323,7 +323,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
 # code like evaluation
 # calculate loss for each epoch
 
-def validation(encoder, decoder, devData_place, learning_rate=0.01):
+def validation(encoder, decoder, pairs_val, learning_rate=0.01):
     val_iters = len(pairs_val)
     loss_total = 0.
     pairs_val = [tensorsFromPair(pair, input_lang_val, output_lang_val) for pair in pairs_val]
@@ -468,7 +468,7 @@ if __name__ == "__main__":
         ######################################
         # Validation part
         ######################################
-        val_loss = validation(encoder1, attn_decoder1, devData_place)
+        val_loss = validation(encoder1, attn_decoder1, pairs_val)
     
         if not best_val_loss or val_loss < best_val_loss:
             # save model and val_loss
