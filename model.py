@@ -473,7 +473,8 @@ if __name__ == "__main__":
         # Validation part
         ######################################
         val_loss = validation(encoder1, attn_decoder1, pairs_val)
-    
+        print(f"val_loss: {val_loss}")
+
         if not best_val_loss or val_loss < best_val_loss:
             # save model and val_loss
             best_val_loss = val_loss
