@@ -457,6 +457,10 @@ if __name__ == "__main__":
     
    
     for x in range(epoch):
+        print("#"*30)
+        print(f"train --{x}-- times")
+        print("#"*30)
+
         #####################################
         # Training part
         ##################################### 
@@ -480,14 +484,21 @@ if __name__ == "__main__":
             unupdate += 1
             if unupdate >= 3:
                 break
+    
+    print("#"*30)
+    print("train finished")
+    print("#"*30)
 
-   
+    
     ######################################
     # Test part
     ######################################
     # load the least val_loss model
-    encoder1 = torch.load("encoder.pth")
-    attn_decoder1 = torch.load("decoder.pth")
+    encoder1 = EncoderRNN(input_lang.n_words, hidden_size)
+    encoder1.load_state_dict(torch.load("encoder.pth")) 
+
+    attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1)
+    attn_decoder1.load_state_dict(torch.load("decoder.pth"))
      
     evaluateRandomly(encoder1, attn_decoder1, testData_place)
 
