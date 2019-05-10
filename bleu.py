@@ -12,7 +12,11 @@ def splitAndNormalize(sentence):
 def ngram(sentence, n):
     # make sentence into n-gram
     ngram_list = []
-    for x in range():
+    sentence_Length = len(sentence)
+    for s in range(sentence_Length-n+1):
+        ngram_list.append(seq[s:s+n])
+    
+    return ngram_list
 
 
 def ngram_precision():
