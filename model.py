@@ -114,7 +114,8 @@ def prepareData(lang1, lang2, data_place, reverse=False):
 # Seq2Seq model
 ################################################
 
-MAX_LENGTH = 20
+#MAX_LENGTH = 20
+MAX_LENGTH = 10
 
 # The Encoder
 class EncoderRNN(nn.Module):
@@ -289,8 +290,6 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
     print_loss_total = 0  # Reset every print_every
     #plot_loss_total = 0  # Reset every plot_every
 
-    encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
-    decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
     #training_pairs = [tensorsFromPair(random.choice(pairs)) for i in range(n_iters)]
     #######################
     # changed   
@@ -328,8 +327,8 @@ def validation(encoder, decoder, pairs_val, learning_rate=0.01):
     loss_total = 0.
     pairs_val = [tensorsFromPair(pair, input_lang_val, output_lang_val) for pair in pairs_val]
     
-    encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
-    decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
+    #encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
+    #decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
 
     criterion = nn.NLLLoss()
 
@@ -455,17 +454,21 @@ if __name__ == "__main__":
     input_lang_test, output_lang_test, pairs_test = prepareData('eng', 'fra', testData_place, True)
     #input_lang_test, output_lang_test, pairs_test = prepareData('jap', 'eng', testData_place, False)
     
+    
+    #####################################
+    # Training part
+    ##################################### 
+    encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
+    attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
+    
+    encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
+    decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
    
     for x in range(epoch):
         print("#"*30)
         print(f"train --{x}-- times")
         print("#"*30)
 
-        #####################################
-        # Training part
-        ##################################### 
-        encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
-        attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
         trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
 
@@ -497,10 +500,14 @@ if __name__ == "__main__":
     # load the least val_loss model
     encoder1 = EncoderRNN(input_lang.n_words, hidden_size)
     encoder1.load_state_dict(torch.load("encoder.pth")) 
+    encoder1.to(device)
+    encoder1 = encoder1.to(device)
 
     attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1)
     attn_decoder1.load_state_dict(torch.load("decoder.pth"))
-     
+    attn_decoder1.to(device)
+    attn_decoder1 = attn_decoder1.to(device)
+
     evaluateRandomly(encoder1, attn_decoder1, testData_place)
 
 
