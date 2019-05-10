@@ -11,6 +11,8 @@ def splitAndNormalize(sentence):
 
 def ngram(sentence, n):
     # make sentence into n-gram
+    ngram_list = []
+    for x in range():
 
 
 def ngram_precision():
@@ -31,6 +33,7 @@ def brevity_penalty(target_sentence_split, output_sentence_split):
 def bleu(target_sentence, output_sentence):
     # calculate (brevity penalty) * (n-gram overlap)
     # use target and output sentence
+
 
 
 if __name__ == "__main__":

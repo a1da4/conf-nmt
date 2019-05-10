@@ -458,12 +458,14 @@ if __name__ == "__main__":
     
     #####################################
     # Training part
-    ##################################### 
+    #####################################
     encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
     attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
     
-    encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
-    decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
+    learning_rate = 0.01
+
+    encoder_optimizer = optim.SGD(encoder1.parameters(), lr=learning_rate)
+    decoder_optimizer = optim.SGD(attn_decoder1.parameters(), lr=learning_rate)
    
     for x in range(epoch):
         print("#"*30)
