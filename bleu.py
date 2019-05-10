@@ -11,14 +11,20 @@ def splitAndNormalize(sentence):
 
 
 def ngram(sentence, n):
-    # make sentence into n-gram
+    # make n-gram and count
+    
+    # make key for ngram-dictionary
     ngram_key = []
     sentence_Length = len(sentence)
     for s in range(sentence_Length-n+1):
-        ngram_list.append(seq[s:s+n])
-    # must use defaultdict
-    ngram_list = list(set(ngram_list))
-    return ngram_list
+        ngram_key.append(sentence[s:s+n])
+    
+    # make dictionary["ngram":"count"]
+    ngramAndCount = defaultdict(int)
+    for key in ngram_key:                                                                                                                                                                               
+        ngramAndCount[key] += 1
+     
+    return ngramAndCount
 
 
 def ngram_precision():
