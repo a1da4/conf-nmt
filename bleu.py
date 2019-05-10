@@ -3,6 +3,7 @@
 # n-gram: 1 <= n <= 4
 # called by "model.py" or "main.py"
 import math
+from collections import defaultdict
 
 def splitAndNormalize(sentence):
     # normalize
@@ -11,7 +12,7 @@ def splitAndNormalize(sentence):
 
 def ngram(sentence, n):
     # make sentence into n-gram
-    ngram_list = []
+    ngram_key = []
     sentence_Length = len(sentence)
     for s in range(sentence_Length-n+1):
         ngram_list.append(seq[s:s+n])
