@@ -15,7 +15,8 @@ def ngram(sentence, n):
     sentence_Length = len(sentence)
     for s in range(sentence_Length-n+1):
         ngram_list.append(seq[s:s+n])
-    
+    # must use defaultdict
+    ngram_list = list(set(ngram_list))
     return ngram_list
 
 
