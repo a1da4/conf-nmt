@@ -97,6 +97,7 @@ if __name__ == "__main__":
     target_sentence = "The NASA Opportunity rover is battling a massive dust storm on Mars ."
     #output_sentence = "The Opportunity rover is combatting a big sandstorm on Mars ."
     output_sentence = "A NASA rover is fighting a massive storm on Mars ."
+    print(f"target:{target_sentence}\noutput:{output_sentence}")
     target_sentence_split = target_sentence.split(" ")
     output_sentence_split = output_sentence.split(" ")
     bleu_score = bleu(target_sentence_split, output_sentence_split)
