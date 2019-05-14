@@ -10,13 +10,13 @@ from collections import defaultdict
     # split
 
 
-def ngram(sentence, n):
+def ngram(sentence_split, n):
     # make n-gram and count
     # make key for ngram-dictionary
     ngram_key = []
-    sentence_Length = len(sentence)
+    sentence_Length = len(sentence_split)
     for s in range(sentence_Length-n+1):
-        ngram_key.append(" ".join(sentence[s:s+n]))
+        ngram_key.append(" ".join(sentence_split[s:s+n]))
     # make dictionary["ngram":"count"]
     # key: ngram, value: count
     ngramAndCount = defaultdict(int)
@@ -52,14 +52,14 @@ def precision_each(target_ngramDict, output_ngramDict):
     return precision_i
 
 
-def precision_total(target_sentence, output_sentence):
+def precision_total(target_sentence_split, output_sentence_split):
     # n-gram overlap
     # calculate n(1~4)-gram precision.
     precision = 1
     for n in range(1, 4+1):
         print(f"make {n}-gram")
-        target_ngramDict = ngram(target_sentence, n) 
-        output_ngramDict = ngram(output_sentence, n)
+        target_ngramDict = ngram(target_sentence_split, n) 
+        output_ngramDict = ngram(output_sentence_split, n)
         print(f"target:{target_ngramDict}\noutput:{output_ngramDict}")
         precision_i = precision_each(target_ngramDict, output_ngramDict)
         precision *= precision_i
@@ -70,12 +70,12 @@ def precision_total(target_sentence, output_sentence):
     return precision
 
 
-def brevity_penalty(target_sentence, output_sentence):
+def brevity_penalty(target_sentence_split, output_sentence_split):
     # brevity penalty
     # calculate min(1, exp(1 - reference-length/output-length))
     # must separated(use .split(" "))
-    target_length = len(target_sentence)
-    output_length = len(output_sentence)
+    target_length = len(target_sentence_split)
+    output_length = len(output_sentence_split)
     lengthRateEXP = math.exp(1 - target_length/output_length)
     brevity = min(1, lengthRateEXP)
     print(f"brevity:{brevity}")
@@ -83,11 +83,11 @@ def brevity_penalty(target_sentence, output_sentence):
     return min(1, lengthRateEXP)
 
 
-def bleu(target_sentence, output_sentence):
+def bleu(target_sentence_split, output_sentence_split):
     # calculate (brevity penalty) * (n-gram overlap)
     # use target and output sentence
-    precision = precision_total(target_sentence, output_sentence)
-    penalty = brevity_penalty(target_sentence, output_sentence)
+    precision = precision_total(target_sentence_split, output_sentence_split)
+    penalty = brevity_penalty(target_sentence_split, output_sentence_split)
     bleu_score = precision * penalty
 
     return bleu_score
