@@ -8,6 +8,7 @@ from collections import defaultdict
 #def splitAndNormalize(sentence):
     # normalize
     # split
+    # use MeCab???
 
 
 def ngram(sentence_split, n):
@@ -65,7 +66,7 @@ def precision_total(target_sentence_split, output_sentence_split):
         precision *= precision_i
         print()
     precision = precision ** (1/4)
-    print(f"precision:{precision}")
+    print("precision:{:.2f}".format(precision))
     
     return precision
 
@@ -78,7 +79,7 @@ def brevity_penalty(target_sentence_split, output_sentence_split):
     output_length = len(output_sentence_split)
     lengthRateEXP = math.exp(1 - target_length/output_length)
     brevity = min(1, lengthRateEXP)
-    print(f"brevity:{brevity}")
+    print("brevity:{:.2f}".format(brevity))
 
     return min(1, lengthRateEXP)
 
@@ -98,12 +99,13 @@ if __name__ == "__main__":
     #output_sentence = "The Opportunity rover is combatting a big sandstorm on Mars ."
     output_sentence = "A NASA rover is fighting a massive storm on Mars ."
     print(f"target:{target_sentence}\noutput:{output_sentence}")
+    print()
     target_sentence_split = target_sentence.split(" ")
     output_sentence_split = output_sentence.split(" ")
     bleu_score = bleu(target_sentence_split, output_sentence_split)
     
-    print(bleu_score)
+    print("bleu_score:{:.2f}".format(bleu_score))
     bleu_score *= 100
-    print(f"{bleu_score}%")
+    print("bleu_score[%]:{:.0f}".format(bleu_score))
     #return bleu_score
 
