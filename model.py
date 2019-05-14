@@ -114,8 +114,8 @@ def prepareData(lang1, lang2, data_place, reverse=False):
 # Seq2Seq model
 ################################################
 
-#MAX_LENGTH = 20
-MAX_LENGTH = 10
+MAX_LENGTH = 20
+#MAX_LENGTH = 10
 
 # The Encoder
 class EncoderRNN(nn.Module):
@@ -353,8 +353,7 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
     with torch.no_grad():
         input_tensor = tensorFromSentence(input_lang_test, sentence)
         input_length = input_tensor.size()[0]
-        # do not need
-        #encoder_hidden = encoder.initHidden()
+        encoder_hidden = encoder.initHidden()
 
         encoder_outputs = torch.zeros(max_length, encoder.hidden_size, device=device)
 
@@ -433,27 +432,27 @@ if __name__ == "__main__":
     #####################################
     # Data place
     #####################################
-    trainData_place = "/lab/aida/datasets/fra-eng/fra.txt"
-    #trainData_place = "/lab/aida/datasets/ASPEC_fixed/train-1_fixed.txt"
+    #trainData_place = "/lab/aida/datasets/fra-eng/fra.txt"
+    trainData_place = "/lab/aida/datasets/ASPEC_fixed/train-1_fixed.txt"
     
-    devData_place = "/lab/aida/datasets/fra-eng/fra.txt"
-    #devData_place = "/lab/aida/datasets/ASPEC_fixed/dev_fixed.txt"
+    #devData_place = "/lab/aida/datasets/fra-eng/fra.txt"
+    devData_place = "/lab/aida/datasets/ASPEC_fixed/dev_fixed.txt"
     
-    testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
-    #testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
+    #testData_place = "/lab/aida/datasets/fra-eng/fra.txt"
+    testData_place = "/lab/aida/datasets/ASPEC_fixed/test_fixed.txt"
 
    
     ####################################
     # Prepare Data
     ####################################
-    input_lang, output_lang, pairs = prepareData('eng', 'fra', trainData_place, True)
-    #input_lang, output_lang, pairs = prepareData('jap', 'eng', trainData_place, False)
+    #input_lang, output_lang, pairs = prepareData('eng', 'fra', trainData_place, True)
+    input_lang, output_lang, pairs = prepareData('jap', 'eng', trainData_place, False)
 
-    input_lang_val, output_lang_val, pairs_val = prepareData("eng", "fra", devData_place, True)
-    #input_lang_val, output_lang_val, pairs_val = prepareData("jap", "eng", devData_place, False)
+    #input_lang_val, output_lang_val, pairs_val = prepareData("eng", "fra", devData_place, True)
+    input_lang_val, output_lang_val, pairs_val = prepareData("jap", "eng", devData_place, False)
     
-    input_lang_test, output_lang_test, pairs_test = prepareData('eng', 'fra', testData_place, True)
-    #input_lang_test, output_lang_test, pairs_test = prepareData('jap', 'eng', testData_place, False)
+    #input_lang_test, output_lang_test, pairs_test = prepareData('eng', 'fra', testData_place, True)
+    input_lang_test, output_lang_test, pairs_test = prepareData('jap', 'eng', testData_place, False)
     
     
     #####################################
@@ -484,8 +483,8 @@ if __name__ == "__main__":
         if not best_val_loss or val_loss < best_val_loss:
             # save model and val_loss
             best_val_loss = val_loss
-            torch.save(encoder1.state_dict(), "encoder.pth")
-            torch.save(attn_decoder1.state_dict(), "decoder.pth")
+            torch.save(encoder1.state_dict(), "ja-en_encoder.pth")
+            torch.save(attn_decoder1.state_dict(), "ja-en_decoder.pth")
             unupdate = 0
         else:
             unupdate += 1
@@ -502,12 +501,12 @@ if __name__ == "__main__":
     ######################################
     # load the least val_loss model
     encoder1 = EncoderRNN(input_lang.n_words, hidden_size)
-    encoder1.load_state_dict(torch.load("encoder.pth")) 
+    encoder1.load_state_dict(torch.load("ja-en_encoder.pth")) 
     encoder1.to(device)
     encoder1 = encoder1.to(device)
 
     attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1)
-    attn_decoder1.load_state_dict(torch.load("decoder.pth"))
+    attn_decoder1.load_state_dict(torch.load("ja-en_decoder.pth"))
     attn_decoder1.to(device)
     attn_decoder1 = attn_decoder1.to(device)
 
