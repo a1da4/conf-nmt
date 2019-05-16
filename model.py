@@ -56,6 +56,7 @@ def unicode2Ascii(s):
     )
 
 # Normalization.
+# TODO need more(For Japanese)
 def normalizeString(s):
     s = unicode2Ascii(s.lower().strip())
     s = re.sub(r"([.!?])", r" \1", s)
@@ -397,7 +398,8 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
                 top3_var = sum(abs(top5_value[0][:3] - topv.item())**2) / 2
 
                 # May be outputted "word(value,top3,top5)"
-                output_wordAndValue = output_lang_test.index2word[topi.item()]
+                # TODO Changed! output_lang_test -> output_lang 
+                output_wordAndValue = output_lang.index2word[topi.item()]
                 #output_wordAndValue += (f"(P:{topv.item()},Vtop3:{top3_var.item()},Vtop5:{top5_var.item()})")
                 output_wordAndValue += (f"(P:{topv.item()},Vtop3:{top3_var},Vtop5:{top5_var})")
                 decoded_words.append(output_wordAndValue)
