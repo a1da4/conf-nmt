@@ -410,9 +410,12 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
         return decoded_words, decoder_attentions[:di + 1]
 
 def evaluateRandomly(encoder, decoder, testData_place,  n=10):
+    # evalate all
+    n = len(pairs_test)
     
     for i in range(n):
-        pair = random.choice(pairs_test)
+        #pair = random.choice(pairs_test)
+        pair = pairs_test[i]
         print(f"input> {pair[0]}")
         print(f"target= {pair[1]}")
         output_words, attentions = evaluate(encoder, decoder, pair[0])
