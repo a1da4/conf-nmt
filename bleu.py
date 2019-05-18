@@ -4,6 +4,7 @@
 # called by "model.py" or "main.py"
 import math
 from collections import defaultdict
+from collections import Counter
 
 #def splitAndNormalize(sentence):
     # normalize
@@ -14,17 +15,14 @@ from collections import defaultdict
 def ngram(sentence_split, n):
     # make n-gram and count
     # make key for ngram-dictionary
-    ngram_key = []
+    ngram_list = []
     sentence_Length = len(sentence_split)
     for s in range(sentence_Length-n+1):
-        ngram_key.append(" ".join(sentence_split[s:s+n]))
-    # make dictionary["ngram":"count"]
-    # key: ngram, value: count
-    ngramAndCount = defaultdict(int)
-    for key in ngram_key: 
-        ngramAndCount[key] += 1
-     
-    return ngramAndCount
+        ngram_list.append(" ".join(sentence_split[s:s+n]))
+    
+    ngramCounter = Counter(ngram_list)
+    
+    return ngramCounter
 
 
 def ngram_totalCount(ngram_Dict):
