@@ -262,10 +262,11 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
             if decoder_input.item() == EOS_token:
                 break
 
-    loss.backward()
-
-    encoder_optimizer.step()
-    decoder_optimizer.step()
+    if flag == 0:
+    # flag 0: training, 1: validation
+        loss.backward()
+        encoder_optimizer.step()
+        decoder_optimizer.step()
 
     return loss.item() / target_length
 
@@ -286,6 +287,7 @@ def timeSince(since, percent):
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
 
 def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
+    flag = 0
     start = time.time()
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
@@ -324,6 +326,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
 # calculate loss for each epoch
 
 def validation(encoder, decoder, pairs_val, learning_rate=0.01):
+    flag = 1
     val_iters = len(pairs_val)
     loss_total = 0.
     pairs_val = [tensorsFromPair(pair, input_lang_val, output_lang_val) for pair in pairs_val]
