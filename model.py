@@ -239,8 +239,10 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     decoder_input = torch.tensor([[SOS_token]], device=device)
 
     decoder_hidden = encoder_hidden
-
-    use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
+    
+    # TODO
+    use_teacher_forcing = False
+    #use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
 
     if use_teacher_forcing:
         # Teacher forcing: Feed the target as the next input
