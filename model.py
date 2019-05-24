@@ -218,7 +218,7 @@ def tensorsFromPair(pair, input_lang, output_lang):
 
 
 
-def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, max_length=MAX_LENGTH):
+def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, flag, max_length=MAX_LENGTH):
     encoder_hidden = encoder.initHidden()
 
     encoder_optimizer.zero_grad()
@@ -308,7 +308,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, learning_rate=0.01):
         input_tensor = training_pair[0]
         target_tensor = training_pair[1]
 
-        loss = train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
+        loss = train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, flag)
         print_loss_total += loss
         #plot_loss_total += loss
 
@@ -342,7 +342,7 @@ def validation(encoder, decoder, pairs_val, learning_rate=0.01):
         val_pair = pairs_val[iter - 1]
         input_tensor = val_pair[0]
         target_tensor = val_pair[1]
-        loss = train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
+        loss = train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, flag)
         loss_total += loss
     
     loss_ave = loss_total / val_iters
