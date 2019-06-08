@@ -178,7 +178,15 @@ def main(args):
     print('| Translated {} sentences ({} tokens) in {:.1f}s ({:.2f} sentences/s, {:.2f} tokens/s)'.format(
         num_sentences, gen_timer.n, gen_timer.sum, num_sentences / gen_timer.sum, 1. / gen_timer.avg))
     if has_target:
-        print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, scorer.result_string()))
+        result, bleup = scorer.result_string()
+        #print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, scorer.result_string()))
+        print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, result))
+        
+        # make csv of each sentence's bleu score
+        with open("result.csv", "w", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(bleup)
+    
     return scorer
 
 
