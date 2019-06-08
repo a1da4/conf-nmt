@@ -126,6 +126,12 @@ class Scorer(object):
             fmt += '/{:2.1f}'
         fmt += ' (BP={:.3f}, ratio={:.3f}, syslen={}, reflen={})'
         bleup = [p * 100 for p in self.precision()[:order]]
+        """
         return fmt.format(order, self.score(order=order), *bleup,
                           self.brevity(), self.stat.predlen/self.stat.reflen,
                           self.stat.predlen, self.stat.reflen)
+        """
+        result = fmt.format(order, self.score(order=order), *bleup,
+                          self.brevity(), self.stat.predlen/self.stat.reflen,
+                          self.stat.predlen, self.stat.reflen)
+        return result, bleup
