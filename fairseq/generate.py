@@ -183,7 +183,7 @@ def main(args):
         print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, result))
         
         # make csv of each sentence's bleu score
-        with open("result.csv", "w", encoding="utf-8") as f:
+        with open("bleu.csv", "w", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(bleup)
     
