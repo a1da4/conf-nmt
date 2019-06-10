@@ -14,6 +14,8 @@ import torch
 from fairseq import bleu, checkpoint_utils, options, progress_bar, tasks, utils
 from fairseq.meters import StopwatchMeter, TimeMeter
 
+# use my bleu code
+from fairseq import mybleu
 
 def main(args):
     assert args.path is not None, '--path required for generation!'
@@ -162,8 +164,8 @@ def main(args):
                             ))
 
                     # Score only the top hypothesis
-                    #if has_target and i == 0:
-                    if has_target:
+                    """
+                    if has_target and i == 0:
                         if align_dict is not None or args.remove_bpe is not None:
                             # Convert back to tokens for evaluation with unk replacement and/or without BPE
                             target_tokens = tgt_dict.encode_line(target_str, add_if_not_exist=True)
@@ -171,8 +173,17 @@ def main(args):
                             scorer.add_string(target_str, hypo_str)
                         else:
                             scorer.add(target_tokens, hypo_tokens)
-                        print("B-{}\t{}".format(sample_id, scorer.result_string()))
-
+                    """
+                    if has_target:
+                        target_tokens = tgt_dict.encode_line(target_str, add_if_not_exist=True)
+                        scorer.add(target_tokens, hypo_tokens)
+                        #print(f"tt{target_tokens}")
+                        #print(f"ht{hypo_tokens}")
+                        print("B-{}\t{:2.2f}".format(sample_id, scorer.result_string()))
+                        print("B'-{}\t{:2.2f}".format(sample_id, mybleu.bleu(target_str, hypo_str)))
+                        
+                        scorer.reset()
+            
             wps_meter.update(num_generated_tokens)
             t.log({'wps': round(wps_meter.avg)})
             num_sentences += sample['nsentences']

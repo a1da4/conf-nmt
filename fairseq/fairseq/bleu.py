@@ -131,7 +131,11 @@ class Scorer(object):
                           self.brevity(), self.stat.predlen/self.stat.reflen,
                           self.stat.predlen, self.stat.reflen)
         """
+        """
         result = fmt.format(order, self.score(order=order), *bleup,
                           self.brevity(), self.stat.predlen/self.stat.reflen,
                           self.stat.predlen, self.stat.reflen)
         return result, bleup
+        """
+        return self.score(order=order)
+        
