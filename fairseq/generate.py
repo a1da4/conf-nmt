@@ -162,7 +162,8 @@ def main(args):
                             ))
 
                     # Score only the top hypothesis
-                    if has_target and i == 0:
+                    #if has_target and i == 0:
+                    if has_target:
                         if align_dict is not None or args.remove_bpe is not None:
                             # Convert back to tokens for evaluation with unk replacement and/or without BPE
                             target_tokens = tgt_dict.encode_line(target_str, add_if_not_exist=True)
@@ -170,6 +171,7 @@ def main(args):
                             scorer.add_string(target_str, hypo_str)
                         else:
                             scorer.add(target_tokens, hypo_tokens)
+                        print("B-{}\t{}".format(sample_id, scorer.result_string()))
 
             wps_meter.update(num_generated_tokens)
             t.log({'wps': round(wps_meter.avg)})
@@ -177,16 +179,20 @@ def main(args):
 
     print('| Translated {} sentences ({} tokens) in {:.1f}s ({:.2f} sentences/s, {:.2f} tokens/s)'.format(
         num_sentences, gen_timer.n, gen_timer.sum, num_sentences / gen_timer.sum, 1. / gen_timer.avg))
+    """
     if has_target:
         result, bleup = scorer.result_string()
         #print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, scorer.result_string()))
         print('| Generate {} with beam={}: {}'.format(args.gen_subset, args.beam, result))
-        
+    """ 
+    
+    """
         # make csv of each sentence's bleu score
+        import csv
         with open("bleu.csv", "w", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(bleup)
-    
+    """
     return scorer
 
 
