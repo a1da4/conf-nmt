@@ -180,7 +180,7 @@ def main(args):
                         #print(f"tt{target_tokens}")
                         #print(f"ht{hypo_tokens}")
                         print("B-{}\t{:2.2f}".format(sample_id, scorer.result_string()))
-                        print("B'-{}\t{:2.2f}".format(sample_id, mybleu.bleu(target_str, hypo_str)))
+                        print("B'-{}\t{:2.2f}".format(sample_id, mybleu.bleu(target_str.lower(), hypo_str.lower())))
                         
                         scorer.reset()
             
