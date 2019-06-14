@@ -1,7 +1,6 @@
 use fairseq(transformer)
 
 ・preprosessing
-
 ```
 $ TEXT=ASPEC/data/
 $ python preprocess.py \
@@ -16,7 +15,6 @@ $ python preprocess.py \
 ```
 
 ・training
-
 ```
 $ mkdir -p checkpoints/trans
 $ python train.py data-bin/aspec.ja-en \
@@ -35,7 +33,6 @@ $ python train.py data-bin/aspec.ja-en \
 ```
 
 ・test (use the best model)
-
 ```
 $ python generate.py data-bin/aspec.ja-en \
     --path checkpoints/trans/checkpoint_best.pt \
