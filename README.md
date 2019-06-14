@@ -2,7 +2,7 @@ use fairseq(transformer)
 
 ・preprosessing
 
-"""
+```
 TEXT=ASPEC/data/
 python preprocess.py \
     --source-lang ja \ 
@@ -13,7 +13,7 @@ python preprocess.py \
     --destdir data-bin/aspec.ja-en \
     --thresholdtgt 10 \ # 目的言語側で出現頻度が10以下の単語を<unk>に置き換え
     --thresholdsrc 10 # 原言語側で出現頻度が10以下の単語を<unk>に置き換え
-"""
+```
 
 ・training
 $ mkdir -p checkpoints/trans
