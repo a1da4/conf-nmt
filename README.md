@@ -3,8 +3,8 @@ use fairseq(transformer)
 ・preprosessing
 
 ```
-TEXT=ASPEC/data/
-python preprocess.py \
+$ TEXT=ASPEC/data/
+$ python preprocess.py \
     --source-lang ja \ 
     --target-lang en \
     --trainpref $TEXT/train-1 \
@@ -16,6 +16,8 @@ python preprocess.py \
 ```
 
 ・training
+
+```
 $ mkdir -p checkpoints/trans
 $ python train.py data-bin/aspec.ja-en \
     --lr 0.1 \
@@ -30,12 +32,16 @@ $ python train.py data-bin/aspec.ja-en \
     --decoder-attention-heads 5 \
     --save-dir checkpoints/trans \
     --max_sentence 64
-    
+```
+
 ・test (use the best model)
+
+```
 $ python generate.py data-bin/aspec.ja-en \
     --path checkpoints/trans/checkpoint_best.pt \
     --batch-size 128 \
     --beam 5
+```
 
 reference
 https://qiita.com/tkmaroon/items/f60ad171911409eed2af
