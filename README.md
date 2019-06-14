@@ -28,7 +28,7 @@ $ python train.py data-bin/aspec.ja-en \
     --save-dir checkpoints/trans \
     --max_sentence 64
     
-・test(use the best model)
+・test (use the best model)
 $ python generate.py data-bin/aspec.ja-en \
     --path checkpoints/trans/checkpoint_best.pt \
     --batch-size 128 \
