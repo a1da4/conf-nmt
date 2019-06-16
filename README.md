@@ -1,4 +1,4 @@
-use fairseq(transformer)
+#use fairseq(transformer)
 
 ・preprosessing
 ```
