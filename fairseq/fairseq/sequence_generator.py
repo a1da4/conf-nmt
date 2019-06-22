@@ -150,6 +150,10 @@ class SequenceGenerator(object):
         new_order = new_order.to(src_tokens.device).long()
         encoder_outs = model.reorder_encoder_out(encoder_outs, new_order)
 
+        #TODO encoder_outs_list[]
+        encoder_outs_list = []
+        encoder_outs.append(encoder_outs)
+
         # initialize buffers
         scores = src_tokens.new(bsz * beam_size, max_len + 1).float().fill_(0)
         scores_buf = scores.clone()
@@ -158,7 +162,6 @@ class SequenceGenerator(object):
         tokens[:, 0] = bos_token or self.eos
         attn, attn_buf = None, None
         nonpad_idxs = None
-
         # list of completed sentences
         finalized = [[] for i in range(bsz)]
         finished = [False for i in range(bsz)]
@@ -223,6 +226,7 @@ class SequenceGenerator(object):
             tokens_clone = tokens.index_select(0, bbsz_idx)
             tokens_clone = tokens_clone[:, 1:step + 2]  # skip the first index, which is EOS
             tokens_clone[:, step] = self.eos
+            
             attn_clone = attn.index_select(0, bbsz_idx)[:, :, 1:step+2] if attn is not None else None
 
             # compute scores per token position
@@ -230,10 +234,13 @@ class SequenceGenerator(object):
             pos_scores[:, step] = eos_scores
             # convert from cumulative to per-position scores
             pos_scores[:, 1:] = pos_scores[:, 1:] - pos_scores[:, :-1]
-
             # normalize sentence-level scores
             if self.normalize_scores:
                 eos_scores /= (step + 1) ** self.len_penalty
+            
+            #TODO
+            print(f"pos_scores_size:{pos_scores.size()}")
+            print(f"pos_scores:{pos_scores}")
 
             cum_unfin = []
             prev = 0
@@ -262,7 +269,6 @@ class SequenceGenerator(object):
                     else:
                         hypo_attn = None
                         alignment = None
-
                     return {
                         'tokens': tokens_clone[i],
                         'score': score,
@@ -273,11 +279,15 @@ class SequenceGenerator(object):
 
                 if len(finalized[sent]) < beam_size:
                     finalized[sent].append(get_hypo())
+                    #TODO
+                    print("get_hypo:{}".format(finalized[sent][-1]))
                 elif not self.stop_early and score > worst_finalized[sent]['score']:
                     # replace worst hypo for this sentence with new/better one
                     worst_idx = worst_finalized[sent]['idx']
                     if worst_idx is not None:
                         finalized[sent][worst_idx] = get_hypo()
+                        #TODO
+                        print("get_hypo_worst:{}".format(finalized[sent][worst_idx]))
 
                     # find new worst finalized hypo for this sentence
                     idx, s = min(enumerate(finalized[sent]), key=lambda r: r[1]['score'])
@@ -304,11 +314,16 @@ class SequenceGenerator(object):
                     corr = batch_idxs - torch.arange(batch_idxs.numel()).type_as(batch_idxs)
                     reorder_state.view(-1, beam_size).add_(corr.unsqueeze(-1) * beam_size)
                 model.reorder_incremental_state(reorder_state)
-                model.reorder_encoder_out(encoder_outs, reorder_state)
+                encoder_outs = model.reorder_encoder_out(encoder_outs, reorder_state)
+                #TODO
+                encoder_outs_list.append(encoder_outs)
 
+            print("tokens_input_forward-decoder:{}".format(tokens[:,:step+1]))
             lprobs, avg_attn_scores = model.forward_decoder(
                 tokens[:, :step + 1], encoder_outs, temperature=self.temperature,
             )
+            print("lprobs_output_forward-decoder_each-size:{}".format(lprobs[0].size()))
+            print("lprobs_output_forward-decoder:{}".format(lprobs))
 
             lprobs[:, self.pad] = -math.inf  # never select pad
             lprobs[:, self.unk] -= self.unk_penalty  # apply unk penalty
@@ -318,6 +333,7 @@ class SequenceGenerator(object):
                 gen_ngrams = [{} for bbsz_idx in range(bsz * beam_size)]
                 for bbsz_idx in range(bsz * beam_size):
                     gen_tokens = tokens[bbsz_idx].tolist()
+
                     for ngram in zip(*[gen_tokens[i:] for i in range(self.no_repeat_ngram_size)]):
                         gen_ngrams[bbsz_idx][tuple(ngram[:-1])] = \
                                 gen_ngrams[bbsz_idx].get(tuple(ngram[:-1]), []) + [ngram[-1]]
@@ -404,6 +420,7 @@ class SequenceGenerator(object):
             # finalize hypotheses that end in eos
             eos_mask = cand_indices.eq(self.eos)
 
+
             finalized_sents = set()
             if step >= self.min_len:
                 # only consider eos when it's among the top beam_size indices
@@ -428,7 +445,9 @@ class SequenceGenerator(object):
 
             if len(finalized_sents) > 0:
                 new_bsz = bsz - len(finalized_sents)
-
+                #TODO
+                print(f"finished_sent:{len(finalized_sents)}")
+                print(f"finished_sent:{finalized_sents}")
                 # construct batch_idxs which holds indices of batches to keep for the next pass
                 batch_mask = cand_indices.new_ones(bsz)
                 batch_mask[cand_indices.new(finalized_sents)] = 0
@@ -511,20 +530,26 @@ class SequenceGenerator(object):
                     attn[:, :, :step + 2], dim=0, index=active_bbsz_idx,
                     out=attn_buf[:, :, :step + 2],
                 )
-
             # swap buffers
             tokens, tokens_buf = tokens_buf, tokens
             scores, scores_buf = scores_buf, scores
             if attn is not None:
                 attn, attn_buf = attn_buf, attn
-
             # reorder incremental state in decoder
             reorder_state = active_bbsz_idx
-
         # sort by score descending
         for sent in range(len(finalized)):
             finalized[sent] = sorted(finalized[sent], key=lambda r: r['score'], reverse=True)
-
+            #TODO
+            #print(f"finalized{sent}:{finalized[sent]}")
+        
+        #TODO Compute encoder_outs
+        Step = 0
+        for encoder_outs in encoder_outs_list:
+            probs_reorder, attn_reorder = model._decode_one(tokens[:, :Step + 1], model.models[0], encoder_outs[0], model.incremental_states, log_probs=True, temperature=self.temperature)
+            print("probs_reorder:\n\tsize:{}\n\ttensor:{}".format(probs_reorder.size(), probs_reorder))
+            Step += 1
+        #print("encoder_outs_list:{}-encoders, context is\n{}".format(len(encoder_outs_list), encoder_outs_list))
         return finalized
 
 
@@ -604,6 +629,7 @@ class EnsembleModel(torch.nn.Module):
             attn = attn[:, -1, :]
         probs = model.get_normalized_probs(decoder_out, log_probs=log_probs)
         probs = probs[:, -1, :]
+        
         return probs, attn
 
     def reorder_encoder_out(self, encoder_outs, new_order):
