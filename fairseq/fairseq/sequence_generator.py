@@ -238,10 +238,6 @@ class SequenceGenerator(object):
             if self.normalize_scores:
                 eos_scores /= (step + 1) ** self.len_penalty
             
-            #TODO
-            print(f"pos_scores_size:{pos_scores.size()}")
-            print(f"pos_scores:{pos_scores}")
-
             cum_unfin = []
             prev = 0
             for f in finished:
@@ -269,25 +265,46 @@ class SequenceGenerator(object):
                     else:
                         hypo_attn = None
                         alignment = None
+                    
+                    #TODO calcurate variance
+                    """
+                    pos_variances = []
+                    #src_len = 1
+                    encoder_outs_forv = model.forward_encoder(encoder_input)
+                    new_order_forv = torch.arange(1).view(-1, 1).repeat(1, 1).view(-1)
+                    new_order_forv = new_order_forv.to(src_tokens.device).long()
+                    encoder_outs_forv = model.reorder_encoder_out(encoder_outs_forv, new_order_forv)
+                    
+                    #reorder_state_forv = None
+                    for s in range(step):
+                        # 今どの言語のtokensを使っているか確認
+                        # tokens_cloneだとoutput
+                        lprobs_forv, avg_attn_scores_forv = model._decode_one(
+                            tokens_clone[i][:s + 1].view(1,-1), model.models[0], encoder_outs_forv[0], 
+                            model.incremental_states, log_probs=True, temperature=self.temperature, 
+                        )
+
+                        # lprobs_forv[1, vocab_size]
+                        top5_value, top5_index = torch.topk(lprobs, 5)
+                        top5_var = sum( (top5_value - pos_scores[i][s])**2 ) / 4
+                        pos_variances.append(top5_var)
+                    """
                     return {
                         'tokens': tokens_clone[i],
                         'score': score,
                         'attention': hypo_attn,  # src_len x tgt_len
                         'alignment': alignment,
                         'positional_scores': pos_scores[i],
+                        #'positional_variance': pos_variances, 
                     }
 
                 if len(finalized[sent]) < beam_size:
                     finalized[sent].append(get_hypo())
-                    #TODO
-                    print("get_hypo:{}".format(finalized[sent][-1]))
                 elif not self.stop_early and score > worst_finalized[sent]['score']:
                     # replace worst hypo for this sentence with new/better one
                     worst_idx = worst_finalized[sent]['idx']
                     if worst_idx is not None:
                         finalized[sent][worst_idx] = get_hypo()
-                        #TODO
-                        print("get_hypo_worst:{}".format(finalized[sent][worst_idx]))
 
                     # find new worst finalized hypo for this sentence
                     idx, s = min(enumerate(finalized[sent]), key=lambda r: r[1]['score'])
@@ -318,12 +335,10 @@ class SequenceGenerator(object):
                 #TODO
                 encoder_outs_list.append(encoder_outs)
 
-            print("tokens_input_forward-decoder:{}".format(tokens[:,:step+1]))
+            #print("tokens_input_forward-decoder:{}".format(tokens[:,:step+1]))
             lprobs, avg_attn_scores = model.forward_decoder(
                 tokens[:, :step + 1], encoder_outs, temperature=self.temperature,
             )
-            print("lprobs_output_forward-decoder_each-size:{}".format(lprobs[0].size()))
-            print("lprobs_output_forward-decoder:{}".format(lprobs))
 
             lprobs[:, self.pad] = -math.inf  # never select pad
             lprobs[:, self.unk] -= self.unk_penalty  # apply unk penalty
@@ -445,9 +460,6 @@ class SequenceGenerator(object):
 
             if len(finalized_sents) > 0:
                 new_bsz = bsz - len(finalized_sents)
-                #TODO
-                print(f"finished_sent:{len(finalized_sents)}")
-                print(f"finished_sent:{finalized_sents}")
                 # construct batch_idxs which holds indices of batches to keep for the next pass
                 batch_mask = cand_indices.new_ones(bsz)
                 batch_mask[cand_indices.new(finalized_sents)] = 0
@@ -540,16 +552,15 @@ class SequenceGenerator(object):
         # sort by score descending
         for sent in range(len(finalized)):
             finalized[sent] = sorted(finalized[sent], key=lambda r: r['score'], reverse=True)
-            #TODO
-            #print(f"finalized{sent}:{finalized[sent]}")
         
+        print(finalized)        
         #TODO Compute encoder_outs
+        """
         Step = 0
         for encoder_outs in encoder_outs_list:
-            probs_reorder, attn_reorder = model._decode_one(tokens[:, :Step + 1], model.models[0], encoder_outs[0], model.incremental_states, log_probs=True, temperature=self.temperature)
-            print("probs_reorder:\n\tsize:{}\n\ttensor:{}".format(probs_reorder.size(), probs_reorder))
+            Probs, attn_reorder = model._decode_one(Tokens[:, :Step + 1], model.models[0], encoder_outs[0], model.incremental_states, log_probs=True, temperature=self.temperature)
             Step += 1
-        #print("encoder_outs_list:{}-encoders, context is\n{}".format(len(encoder_outs_list), encoder_outs_list))
+        """
         return finalized
 
 
