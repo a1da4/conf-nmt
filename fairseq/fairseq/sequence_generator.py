@@ -150,10 +150,6 @@ class SequenceGenerator(object):
         new_order = new_order.to(src_tokens.device).long()
         encoder_outs = model.reorder_encoder_out(encoder_outs, new_order)
 
-        #TODO encoder_outs_list[]
-        encoder_outs_list = []
-        encoder_outs.append(encoder_outs)
-
         # initialize buffers
         scores = src_tokens.new(bsz * beam_size, max_len + 1).float().fill_(0)
         scores_buf = scores.clone()
@@ -295,7 +291,7 @@ class SequenceGenerator(object):
                         'attention': hypo_attn,  # src_len x tgt_len
                         'alignment': alignment,
                         'positional_scores': pos_scores[i],
-                        #'positional_variance': pos_variances, 
+                        'positional_variance': s_dic[i]["values"], 
                     }
 
                 if len(finalized[sent]) < beam_size:
@@ -320,9 +316,62 @@ class SequenceGenerator(object):
                     finished[sent] = True
                     newly_finished.append(unfin_idx)
             return newly_finished
+            
+        
+        # Proposal
+        def mkdict(s):
+            # make dictionary
+            # "id": token ids, "values": variance each word, "match": bool, t_dict match or not
+            return [ {"id": [s[ids]], "values": [], "match": False} for ids in range(len(s))]
+        
+        # Proposal
+        def forward_dict(s_dic, t, n):
+            # s: n words, t: n+1 words
+            # s_dic: n variance, n: words(step)
+            cuda = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            #print(cuda)    # cuda=cuda:0
+            
+            t_dic = mkdict(t)
+            print("s_dic:{}".format(s_dic))
+            print("t_dic:{}".format(t_dic))
+
+            for ids in range(len(s_dic)):
+                for idt in range(len(t_dic)):
+                    if t_dic[idt]["match"]:
+                        continue
+            
+                    if str(s_dic[ids]["id"][0]) == str(t_dic[idt]["id"][0][:n]):
+                        t_dic[idt]["values"] = s_dic[ids]["values"].copy()
+                        t_dic[idt]["match"] = True
+
+            # calculate variance
+            top_probs = torch.Tensor([lprobs[idx][int(t_dic[idx]["id"][0][-1])] for idx in range(len(t_dic))]).to(device=cuda)
+            print("top_probs:{}".format(top_probs))
+            top5_value, top5_index = torch.topk(lprobs, 5)
+
+            print("top5_value:{}".format(top5_value))
+            #print((top5_value - top_probs.view(-1,1)).sum(1))
+            top5_var = (((top5_value - top_probs.view(-1, 1))**2).sum(1) / 4).to(device=cuda)
+            print("top5_var:{}".format(top5_var))
+
+            # t_dic["values"] := top5_var
+            for idt in range(len(t_dic)):
+                t_dic[idt]["values"].append(top5_var[idt])
+            #print("t_dic:{}".format(t_dic))
+
+            # delete s_dic, and copy
+            s_dic.clear()
+            s_dic = t_dic.copy()
+
+            return s_dic
+       
 
         reorder_state = None
         batch_idxs = None
+        
+        #Proposal
+        s_dic = None
+
         for step in range(max_len + 1):  # one extra step for EOS marker
             # reorder decoder internal states based on the prev choice of beams
             if reorder_state is not None:
@@ -332,13 +381,17 @@ class SequenceGenerator(object):
                     reorder_state.view(-1, beam_size).add_(corr.unsqueeze(-1) * beam_size)
                 model.reorder_incremental_state(reorder_state)
                 encoder_outs = model.reorder_encoder_out(encoder_outs, reorder_state)
-                #TODO
-                encoder_outs_list.append(encoder_outs)
 
             #print("tokens_input_forward-decoder:{}".format(tokens[:,:step+1]))
             lprobs, avg_attn_scores = model.forward_decoder(
                 tokens[:, :step + 1], encoder_outs, temperature=self.temperature,
             )
+
+            # Proposal
+            if s_dic == None:
+                s_dic = mkdict(tokens)
+            else:
+                s_dic = forward_dict(s_dic, tokens, step) 
 
             lprobs[:, self.pad] = -math.inf  # never select pad
             lprobs[:, self.unk] -= self.unk_penalty  # apply unk penalty
@@ -552,15 +605,8 @@ class SequenceGenerator(object):
         # sort by score descending
         for sent in range(len(finalized)):
             finalized[sent] = sorted(finalized[sent], key=lambda r: r['score'], reverse=True)
-        
-        print(finalized)        
-        #TODO Compute encoder_outs
-        """
-        Step = 0
-        for encoder_outs in encoder_outs_list:
-            Probs, attn_reorder = model._decode_one(Tokens[:, :Step + 1], model.models[0], encoder_outs[0], model.incremental_states, log_probs=True, temperature=self.temperature)
-            Step += 1
-        """
+        #TODO
+        print("finalized:\n{}".format(finalized))
         return finalized
 
 
