@@ -156,7 +156,16 @@ def main(args):
                                 hypo['positional_scores'].tolist(),
                             ))
                         ))
-
+                        
+                        # print positional variance
+                        print('V-{}\t{}'.format(
+                            sample_id,
+                            ' '.join(map(
+                                lambda x: '{:.4f}'.format(x),
+                                hypo['positional_variance'].tolist(),
+                            ))
+                        ))
+                        
                         if args.print_alignment:
                             print('A-{}\t{}'.format(
                                 sample_id,
