@@ -161,11 +161,14 @@ def main(args):
                         print('V-{}\t{}'.format(
                             sample_id,
                             ' '.join(map(
-                                lambda x: '{:.4f}'.format(x),
+                                lambda x: '{:1.3f}'.format(x),
                                 hypo['positional_variance'].tolist(),
                             ))
                         ))
-                        
+
+                        # print min variance
+                        print('Vmin-{}\t{:1.3f}'.format(sample_id, hypo['positional_scores'].min()))
+
                         if args.print_alignment:
                             print('A-{}\t{}'.format(
                                 sample_id,
