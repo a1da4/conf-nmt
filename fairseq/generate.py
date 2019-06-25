@@ -162,7 +162,7 @@ def main(args):
                             sample_id,
                             ' '.join(map(
                                 lambda x: '{:1.3f}'.format(x),
-                                hypo['positional_variance'].tolist(),
+                                hypo['positional_variance'],
                             ))
                         ))
 
