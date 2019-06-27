@@ -332,8 +332,7 @@ class SequenceGenerator(object):
             #print(cuda)    # cuda=cuda:0
             
             t_dic = mkdict(t)
-            print("s_dic:{}".format(s_dic))
-            print("t_dic:{}".format(t_dic))
+            #print("s_dic:{}".format(s_dic))
 
             for ids in range(len(s_dic)):
                 for idt in range(len(t_dic)):
@@ -346,13 +345,13 @@ class SequenceGenerator(object):
 
             # calculate variance
             top_probs = torch.Tensor([lprobs[idx][int(t_dic[idx]["id"][0][-1])] for idx in range(len(t_dic))]).to(device=cuda)
-            print("top_probs:{}".format(top_probs))
+            #print("top_probs:{}".format(top_probs))
             top5_value, top5_index = torch.topk(lprobs, 5)
 
-            print("top5_value:{}".format(top5_value))
+            #print("top5_value:{}".format(top5_value))
             #print((top5_value - top_probs.view(-1,1)).sum(1))
             top5_var = (((top5_value - top_probs.view(-1, 1))**2).sum(1) / 4).to(device=cuda)
-            print("top5_var:{}".format(top5_var))
+            #print("top5_var:{}".format(top5_var))
 
             # t_dic["values"] := top5_var
             for idt in range(len(t_dic)):
@@ -389,9 +388,9 @@ class SequenceGenerator(object):
 
             # Proposal
             if s_dic == None:
-                s_dic = mkdict(tokens)
+                s_dic = mkdict(tokens[:, :step+1])
             else:
-                s_dic = forward_dict(s_dic, tokens, step) 
+                s_dic = forward_dict(s_dic, tokens[:, :step+1], step) 
 
             lprobs[:, self.pad] = -math.inf  # never select pad
             lprobs[:, self.unk] -= self.unk_penalty  # apply unk penalty
