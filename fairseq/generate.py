@@ -167,7 +167,7 @@ def main(args):
                         ))
 
                         # print min variance
-                        print('Vmin-{}\t{:1.3f}'.format(sample_id, hypo['positional_variance'].min()))
+                        print('Vmin-{}\t{:1.3f}'.format(sample_id, min(hypo['positional_variance'])))
 
                         if args.print_alignment:
                             print('A-{}\t{}'.format(
