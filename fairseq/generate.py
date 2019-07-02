@@ -162,12 +162,12 @@ def main(args):
                             sample_id,
                             ' '.join(map(
                                 lambda x: '{:1.3f}'.format(x),
-                                hypo['positional_variance'].tolist(),
+                                hypo['positional_variance'],
                             ))
                         ))
 
                         # print min variance
-                        print('Vmin-{}\t{:1.3f}'.format(sample_id, hypo['positional_scores'].min()))
+                        print('Vmin-{}\t{:1.3f}'.format(sample_id, min(hypo['positional_variance'])))
 
                         if args.print_alignment:
                             print('A-{}\t{}'.format(
@@ -195,6 +195,7 @@ def main(args):
                         print("B'-{}\t{:2.2f}".format(sample_id, mybleu.bleu(target_str.lower(), hypo_str.lower())))
                         
                         scorer.reset()
+                            
             
             wps_meter.update(num_generated_tokens)
             t.log({'wps': round(wps_meter.avg)})
