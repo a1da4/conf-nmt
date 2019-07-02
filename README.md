@@ -2,6 +2,7 @@ use fairseq(transformer)
 
 ・preprosessing
 ```
+$ cd fairseq
 $ TEXT=ASPEC/data/
 $ python preprocess.py \
     --source-lang ja \ 
@@ -38,6 +39,13 @@ $ python generate.py data-bin/aspec.ja-en \
     --path checkpoints/trans/checkpoint_best.pt \
     --batch-size 128 \
     --beam 5
+```
+
+・view at datatable
+```
+# please set your text generated from "generate.py" in "text2csv.py"
+# do below command, you can get csv file
+$ python text2csv
 ```
 
 reference
