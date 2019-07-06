@@ -16,6 +16,7 @@ import torch
 
 from fairseq import checkpoint_utils, options, tasks, utils
 
+from fairseq import mybleu
 
 Batch = namedtuple('Batch', 'ids src_tokens src_lengths')
 Translation = namedtuple('Translation', 'src_str hypos pos_scores alignments')
@@ -158,6 +159,13 @@ def main(args):
                         id,
                         ' '.join(map(lambda x: str(utils.item(x)), alignment))
                     ))
+                #proposal
+                print('V-{}\t{}'.format(
+                    id,
+                    ' '.join(map(lambda x: '{:.4f}'.format(x), hypo['positional_variance'].tolist()
+                    ))
+                ))
+
 
         # update running id counter
         start_id += len(inputs)
