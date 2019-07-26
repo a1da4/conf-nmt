@@ -2,7 +2,7 @@
 * Model: Transformer, fairseq
 * Data: ASPEC
 
-・preprosessing
+# preprosessing
 ```
 $ cd fairseq
 $ TEXT=ASPEC/data/
@@ -17,7 +17,7 @@ $ python preprocess.py \
     --thresholdsrc 10 # 原言語側で出現頻度が10以下の単語を<unk>に置き換え
 ```
 
-・training
+# training
 ```
 $ mkdir -p checkpoints/trans
 $ python train.py data-bin/aspec.ja-en \
@@ -35,7 +35,7 @@ $ python train.py data-bin/aspec.ja-en \
     --max_sentence 64
 ```
 
-・test (use the best model)
+# test (use the best model)
 ```
 $ python generate.py data-bin/aspec.ja-en \
     --path checkpoints/trans/checkpoint_best.pt \
