@@ -1,4 +1,6 @@
-use fairseq(transformer)
+*EXAMPLE*
+* Model: Transformer, fairseq
+* Data: ASPEC
 
 ・preprosessing
 ```
