@@ -16,6 +16,7 @@ from fairseq.meters import StopwatchMeter, TimeMeter
 
 # use my bleu code
 from fairseq import mybleu
+from fairseq import bleu_smooth
 
 def main(args):
     assert args.path is not None, '--path required for generation!'
@@ -193,6 +194,7 @@ def main(args):
                         #print(f"ht{hypo_tokens}")
                         print("B-{}\t{:2.2f}".format(sample_id, scorer.result_string()))
                         print("B'-{}\t{:2.2f}".format(sample_id, mybleu.bleu(target_str.lower(), hypo_str.lower())))
+                        print("B''-{}\t{:2.2f}".format(sample_id, bleu_smooth.bleu(target_str.lower(), hypo_str.lower())))
                         
                         scorer.reset()
                             
