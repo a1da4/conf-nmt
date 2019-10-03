@@ -18,7 +18,7 @@ def getOutputs(text):
                 if line[0] == "H":
                     outputs.append(lines[2])
                 outputs.append(lines[1])
-                if line[1] == "'":
+                if line[1] == "'" and line[2] == "'":
                     flag = 0
 
             if line[0] == "S":
