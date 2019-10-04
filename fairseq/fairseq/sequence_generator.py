@@ -285,13 +285,25 @@ class SequenceGenerator(object):
                         top5_var = sum( (top5_value - pos_scores[i][s])**2 ) / 4
                         pos_variances.append(top5_var)
                     """
+                    global pos_variance
+                    pos_variance = None
+                    #TODO positional_variance id一致
+                    for ids in range(len(s_dic)):
+                        #print(s_dic[ids]["id"][0][1:], tokens_clone[i][:-1])
+                        if str(s_dic[ids]["id"][0][1:]) == str(tokens_clone[i][:-1]):
+                            pos_variance = s_dic[ids]["values"]
+                            #print("Match")
+                            break
+                    #"""
+
                     return {
                         'tokens': tokens_clone[i],
                         'score': score,
                         'attention': hypo_attn,  # src_len x tgt_len
                         'alignment': alignment,
                         'positional_scores': pos_scores[i],
-                        'positional_variance': s_dic[i]["values"], 
+                        #'positional_variance': s_dic[i]["values"], 
+                        'positional_variance': pos_variance, 
                     }
 
                 if len(finalized[sent]) < beam_size:
@@ -350,7 +362,11 @@ class SequenceGenerator(object):
 
             #print("top5_value:{}".format(top5_value))
             #print((top5_value - top_probs.view(-1,1)).sum(1))
-            top5_var = (((top5_value - top_probs.view(-1, 1))**2).sum(1) / 4).to(device=cuda)
+
+            # log probability
+            #top5_var = (((top5_value - top_probs.view(-1, 1))**2).sum(1) / 4).to(device=cuda)
+            # probability
+            top5_var = (((top5_value.exp() - top_probs.view(-1, 1).exp())**2).sum(1) / 4).to(device=cuda)
             #print("top5_var:{}".format(top5_var))
 
             # t_dic["values"] := top5_var
@@ -386,11 +402,13 @@ class SequenceGenerator(object):
                 tokens[:, :step + 1], encoder_outs, temperature=self.temperature,
             )
 
-            # Proposal
+            # TODO Proposal
+            #"""
             if s_dic == None:
                 s_dic = mkdict(tokens[:, :step+1])
             else:
                 s_dic = forward_dict(s_dic, tokens[:, :step+1], step) 
+            #"""
 
             lprobs[:, self.pad] = -math.inf  # never select pad
             lprobs[:, self.unk] -= self.unk_penalty  # apply unk penalty
@@ -605,7 +623,7 @@ class SequenceGenerator(object):
         for sent in range(len(finalized)):
             finalized[sent] = sorted(finalized[sent], key=lambda r: r['score'], reverse=True)
         #TODO
-        print("finalized:\n{}".format(finalized))
+        #print("finalized:\n{}".format(finalized))
         return finalized
 
 
