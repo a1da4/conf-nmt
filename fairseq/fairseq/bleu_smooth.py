@@ -56,15 +56,15 @@ def precision_total(target_sentence_split, output_sentence_split):
     # calculate n(1~4)-gram precision.
     precision = 1
     for n in range(1, 4+1):
-        print(f"make {n}-gram")
+        #print(f"make {n}-gram")
         target_ngramDict = ngram(target_sentence_split, n) 
         output_ngramDict = ngram(output_sentence_split, n)
-        print(f"target:{target_ngramDict}\noutput:{output_ngramDict}")
+        #print(f"target:{target_ngramDict}\noutput:{output_ngramDict}")
         precision_i = precision_each(target_ngramDict, output_ngramDict)
         precision *= precision_i
-        print()
+        #print()
     precision = precision ** (1/4)
-    print("precision:{:.2f}".format(precision))
+    #print("precision:{:.2f}".format(precision))
     
     return precision
 
@@ -77,7 +77,7 @@ def brevity_penalty(target_sentence_split, output_sentence_split):
     output_length = len(output_sentence_split)
     lengthRateEXP = math.exp(1 - target_length/output_length)
     brevity = min(1, lengthRateEXP)
-    print("brevity:{:.2f}".format(brevity))
+    #print("brevity:{:.2f}".format(brevity))
 
     return min(1, lengthRateEXP)
 
@@ -96,14 +96,14 @@ if __name__ == "__main__":
     target_sentence = "The NASA Opportunity rover is battling a massive dust storm on Mars ."
     #output_sentence = "The Opportunity rover is combatting a big sandstorm on Mars ."
     output_sentence = "A NASA rover is fighting a massive storm on Mars ."
-    print(f"target:{target_sentence}\noutput:{output_sentence}")
-    print()
+    #print(f"target:{target_sentence}\noutput:{output_sentence}")
+    #print()
     target_sentence_split = target_sentence.split(" ")
     output_sentence_split = output_sentence.split(" ")
     bleu_score = bleu(target_sentence_split, output_sentence_split)
     
-    print("bleu_score:{:.2f}".format(bleu_score))
+    #print("bleu_score:{:.2f}".format(bleu_score))
     bleu_score *= 100
-    print("bleu_score[%]:{:.0f}".format(bleu_score))
+    #print("bleu_score[%]:{:.0f}".format(bleu_score))
     #return bleu_score
 
