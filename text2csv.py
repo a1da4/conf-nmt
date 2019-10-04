@@ -3,8 +3,11 @@
 
 import re
 import csv
+import sys
 
-text = "fairseq_result.txt"
+
+text = sys.argv
+text = text[1]
 
 def getOutputs(text):
     with open(text) as data:
@@ -31,7 +34,8 @@ def getOutputs(text):
 
 
 def write(sentences):
-    with open("result.csv", "w", encoding="utf-8") as f:
+    f_name = text + ".csv"
+    with open(f_name, "w", encoding="utf-8") as f:
         writer = csv.writer(f)
         for sentence in sentences:
             writer.writerow(sentence)
