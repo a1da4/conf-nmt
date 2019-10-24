@@ -26,6 +26,7 @@ def ngram(sentence_split, n):
 
 
 def ngram_totalCount(ngram_Dict):
+    #totalCount = 1e-8
     totalCount = 0
     for key in ngram_Dict:
         totalCount += ngram_Dict[key]
@@ -46,6 +47,9 @@ def precision_each(target_ngramDict, output_ngramDict):
     target_count = ngram_totalCount(target_ngramDict)
     output_count = ngram_totalCount(output_ngramDict)
     match_count = ngram_matchCount(target_ngramDict, output_ngramDict)
+    # 0 で割ってしまうことを防ぐ。文長4未満への対策
+    if target_count==0 or output_count==0:
+        return 1
     precision_i = min(target_count, match_count) / output_count
     
     return precision_i
@@ -82,28 +86,46 @@ def brevity_penalty(target_sentence_split, output_sentence_split):
     return min(1, lengthRateEXP)
 
 
-def bleu(target_sentence_split, output_sentence_split):
+def bleu(target_sentence, output_sentence):
     # calculate (brevity penalty) * (n-gram overlap)
     # use target and output sentence
-    precision = precision_total(target_sentence_split, output_sentence_split)
-    penalty = brevity_penalty(target_sentence_split, output_sentence_split)
+    target_sentence = target_sentence.split(" ")
+    output_sentence = output_sentence.split(" ")
+
+    if len(target_sentence[-1])>1 and '.' in target_sentence[-1]:
+        target_sentence = split_dot(target_sentence)
+    if len(output_sentence[-1])>1 and '.' in output_sentence[-1]:
+        output_sentence = split_dot(output_sentence)
+    
+    print(target_sentence, output_sentence)
+
+    precision = precision_total(target_sentence, output_sentence)
+    penalty = brevity_penalty(target_sentence, output_sentence)
     bleu_score = precision * penalty
+    
+    bleu_score *= 100
 
     return bleu_score
 
 
+def split_dot(sentence):
+    sentence[-1] = sentence[-1][:-1]
+    sentence.append('.')
+    
+    return sentence
+
+"""
 if __name__ == "__main__":
-    target_sentence = "The NASA Opportunity rover is battling a massive dust storm on Mars ."
+    #target_sentence = "The NASA Opportunity rover is battling a massive dust storm on Mars ."
     #output_sentence = "The Opportunity rover is combatting a big sandstorm on Mars ."
-    output_sentence = "A NASA rover is fighting a massive storm on Mars ."
+    #output_sentence = "A NASA rover is fighting a massive storm on Mars ."
     #print(f"target:{target_sentence}\noutput:{output_sentence}")
     #print()
-    target_sentence_split = target_sentence.split(" ")
-    output_sentence_split = output_sentence.split(" ")
-    bleu_score = bleu(target_sentence_split, output_sentence_split)
+    bleu_score = bleu(target_sentence, output_sentence)
     
     #print("bleu_score:{:.2f}".format(bleu_score))
     bleu_score *= 100
     #print("bleu_score[%]:{:.0f}".format(bleu_score))
-    #return bleu_score
+    return bleu_score
+"""
 
