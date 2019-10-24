@@ -32,7 +32,8 @@ $ python train.py data-bin/aspec.ja-en \ # preprocessingで処理したデータ
     --encoder-attention-heads 5 \
     --decoder-attention-heads 5 \
     --save-dir checkpoints/trans \  # 学習結果の保存先
-    --max_sentence 64
+    --max-sentences 64 \
+    --max-epoch 50
 ```
 
 # test (use the best model)
