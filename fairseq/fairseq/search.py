@@ -85,6 +85,31 @@ class BeamSearch(Search):
         return self.scores_buf, self.indices_buf, self.beams_buf
 
 
+class TargetSearch(Search):
+    def __init__(self, tgt_dict):
+        super().__init__(tgt_dict)
+
+    def step(self, step, lprobs, scores, target_indices):
+        super()._init_buffers(lprobs)
+        bsz, beam_size, vocab_size = lprobs.size()
+
+        if step == 0:
+            lprobs = lprobs[:, ::beam_size, :].contiguous()
+        else:
+            lprobs.add_(scores[:, :, step - 1].unsqueeze(-1)
+
+
+        if step < target_indices.size(1):
+            self.indices_buf = target_indices[:, step].view(-1, 1)
+        else:
+            self.indices_buf = torch.LongTensor(bsz, 1).fill_(self.pad).cuda()
+        self.scores_buf = lprobs.view(bsz, -1).gather(1, self.indices_buf)
+
+        torch.div(self.indices_buf, vocab_size, out=self.beams_buf)
+        self.indices_buf.fmod_(vocab_size)
+        return self.scores_buf, self.indices_buf, self.beams_buf
+
+
 class LengthConstrainedBeamSearch(Search):
 
     def __init__(self, tgt_dict, min_len_a, min_len_b, max_len_a, max_len_b):
