@@ -96,7 +96,7 @@ class TargetSearch(Search):
         if step == 0:
             lprobs = lprobs[:, ::beam_size, :].contiguous()
         else:
-            lprobs.add_(scores[:, :, step - 1].unsqueeze(-1)
+            lprobs.add_(scores[:, :, step - 1].unsqueeze(-1))
 
 
         if step < target_indices.size(1):
