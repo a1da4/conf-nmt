@@ -97,7 +97,9 @@ class SequenceGenerator(object):
                 tgt_dict, min_len_a=1, min_len_b=0, max_len_a=1, max_len_b=0,
             )
         else:
-            self.search = search.BeamSearch(tgt_dict)
+            self.search = search.TargetSearch(tgt_dict)
+            #self.search = search.BeamSearch(tgt_dict)
+            print(self.search)
 
     @torch.no_grad()
     def generate(
@@ -126,6 +128,8 @@ class SequenceGenerator(object):
             k: v for k, v in sample['net_input'].items()
             if k != 'prev_output_tokens'
         }
+        # COPY sample['target']
+        ref = sample['target'].clone()
 
         src_tokens = encoder_input['src_tokens']
         src_lengths = (src_tokens.ne(self.eos) & src_tokens.ne(self.pad)).long().sum(dim=1)
@@ -285,6 +289,9 @@ class SequenceGenerator(object):
                         top5_var = sum( (top5_value - pos_scores[i][s])**2 ) / 4
                         pos_variances.append(top5_var)
                     """
+
+                    #TODO test for generate
+                    """
                     global pos_variance
                     pos_variance = None
                     #TODO positional_variance id一致
@@ -303,7 +310,8 @@ class SequenceGenerator(object):
                         'alignment': alignment,
                         'positional_scores': pos_scores[i],
                         #'positional_variance': s_dic[i]["values"], 
-                        'positional_variance': pos_variance, 
+                        #TODO test for generate
+                        #'positional_variance': pos_variance, 
                     }
 
                 if len(finalized[sent]) < beam_size:
@@ -403,7 +411,7 @@ class SequenceGenerator(object):
             )
 
             # TODO Proposal
-            #"""
+            """
             if s_dic == None:
                 s_dic = mkdict(tokens[:, :step+1])
             else:
@@ -472,6 +480,9 @@ class SequenceGenerator(object):
                             step,
                             lprobs.view(bsz, -1, self.vocab_size),
                             scores.view(bsz, beam_size, -1)[:, :, :step],
+                            # TargetSearch
+                            #sample['target']
+                            ref
                         )
                         cand_scores[partial_prefix_mask] = partial_scores[partial_prefix_mask]
                         cand_indices[partial_prefix_mask] = partial_indices[partial_prefix_mask]
@@ -481,6 +492,9 @@ class SequenceGenerator(object):
                         step,
                         lprobs.view(bsz, -1, self.vocab_size),
                         scores.view(bsz, beam_size, -1)[:, :, :step],
+                        # TargetSearch
+                        #sample['target']
+                        ref
                     )
             else:
                 # make probs contain cumulative scores for each hypothesis
@@ -534,6 +548,9 @@ class SequenceGenerator(object):
                 batch_mask = cand_indices.new_ones(bsz)
                 batch_mask[cand_indices.new(finalized_sents)] = 0
                 batch_idxs = batch_mask.nonzero().squeeze(-1)
+                #print('batch_idxs: ', batch_idxs)
+                #TODO sample['target'] も更新する
+                ref = ref[batch_idxs]
 
                 eos_mask = eos_mask[batch_idxs]
                 cand_beams = cand_beams[batch_idxs]
