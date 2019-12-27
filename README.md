@@ -50,6 +50,3 @@ $ python generate.py data-bin/aspec.ja-en \ # preprocessingで処理したデー
 # do below command, you can get csv file
 $ python text2csv
 ```
-
-reference
-https://qiita.com/tkmaroon/items/f60ad171911409eed2af
