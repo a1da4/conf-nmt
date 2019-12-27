@@ -1,4 +1,4 @@
-dddddd*EXAMPLE*
+*EXAMPLE*
 * Model: Transformer, fairseq
 * Data: ASPEC
 
