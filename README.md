@@ -1,4 +1,4 @@
-*EXAMPLE*
+dddddd*EXAMPLE*
 * Model: Transformer, fairseq
 * Data: ASPEC
 
@@ -46,7 +46,7 @@ $ python generate.py data-bin/aspec.ja-en \ # preprocessingで処理したデー
 
 ・view at datatable
 ```
-# please set your text generated from "generate.py" in "text2csv.py"
+# please set your text generated from "generate.py" in "output2csv.py"
 # do below command, you can get csv file
-$ python text2csv
+$ python output2csv.py FAIRSEQ_OUTPUTS
 ```
