@@ -1,12 +1,9 @@
 # Fix datasets -> (lang1)\t(lang2)
 import re
+import sys
 import MeCab
 
-# Define where is your datasets.
-data_place = "/Users/aidataichi/Downloads/ASPEC/ASPEC-JE/train/train-1.txt"
-#data_place = "/Users/aidataichi/Downloads/ASPEC/ASPEC-JE/test/test.txt"
-#data_place = "/Users/aidataichi/Downloads/ASPEC/ASPEC-JE/dev/dev.txt"
-#data_place = "/Users/aidataichi/Downloads/ASPEC/ASPEC-JE/devtest/devtest.txt"
+data_place = sys.argv[1]
 
 mecab = MeCab.Tagger("-Owakati")
 
