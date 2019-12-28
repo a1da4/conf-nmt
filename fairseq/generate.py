@@ -11,7 +11,8 @@ Translate pre-processed data with a trained model.
 
 import torch
 
-from fairseq import bleu, checkpoint_utils, options, progress_bar, tasks, utils
+from fairseq import checkpoint_utils, options, progress_bar, tasks, utils
+#from fairseq import bleu, checkpoint_utils, options, progress_bar, tasks, utils
 from fairseq.meters import StopwatchMeter, TimeMeter
 
 # use my bleu code
@@ -88,15 +89,37 @@ def main(args):
     generator = task.build_generator(args)
 
     # Generate and compute BLEU score
+    """
     if args.sacrebleu:
         scorer = bleu.SacrebleuScorer()
     else:
         scorer = bleu.Scorer(tgt_dict.pad(), tgt_dict.eos(), tgt_dict.unk())
+    """
     num_sentences = 0
     has_target = True
+
+    try:
+        #hypo_tensor = torch.load('aspec-test.pt')
+        hypo_tensor = torch.load('aspec-train.pt')
+        hypo_tensor_save = False
+    except:
+        #TODO hypo_tokens を保存する tensor を作成
+        ## test
+        #hypo_tensor = torch.full((1812, 120), 1, dtype=torch.int64)
+        ## train
+        hypo_tensor = torch.full((200000, 220), 1, dtype=torch.int64)
+        hypo_tensor_save = True
+
     with progress_bar.build_progress_bar(args, itr) as t:
         wps_meter = TimeMeter()
         for sample in t:
+            #TODO create samle[hypo]
+            if not hypo_tensor_save:
+                #sample['hypo'] = torch.full((len(sample['target']), 120), 1, dtype=torch.long)
+                sample['hypo'] = torch.full((len(sample['target']), 220), 1, dtype=torch.long)
+                for i in range(len(sample['target'])):
+                    sample['hypo'][i] = hypo_tensor[sample['id'][i]]
+
             sample = utils.move_to_cuda(sample) if use_cuda else sample
             if 'net_input' not in sample:
                 continue
@@ -104,6 +127,7 @@ def main(args):
             prefix_tokens = None
             if args.prefix_size > 0:
                 prefix_tokens = sample['target'][:, :args.prefix_size]
+            
 
             gen_timer.start()
             hypos = task.inference_step(generator, models, sample, prefix_tokens)
@@ -147,6 +171,10 @@ def main(args):
                         tgt_dict=tgt_dict,
                         remove_bpe=args.remove_bpe,
                     )
+                    #TODO obtain hypo_tokens
+                    if hypo_tensor_save:
+                        #print(hypo_tokens)
+                        hypo_tensor[sample_id][:len(hypo_tokens)] = hypo_tokens
 
                     if not args.quiet:
                         print('H-{}\t{}\t{}'.format(sample_id, hypo['score'], hypo_str))
@@ -158,6 +186,7 @@ def main(args):
                             ))
                         ))
                         
+                        """
                         # print positional variance
                         print('V-{}\t{}'.format(
                             sample_id,
@@ -175,6 +204,7 @@ def main(args):
                                 sample_id,
                                 ' '.join(map(lambda x: str(utils.item(x)), alignment))
                             ))
+                        #"""
 
                     # Score only the top hypothesis
                     """
@@ -189,14 +219,14 @@ def main(args):
                     """
                     if has_target:
                         target_tokens = tgt_dict.encode_line(target_str, add_if_not_exist=True)
-                        scorer.add(target_tokens, hypo_tokens)
+                        #scorer.add(target_tokens, hypo_tokens)
                         #print(f"tt{target_tokens}")
                         #print(f"ht{hypo_tokens}")
-                        print("B-{}\t{:2.2f}".format(sample_id, scorer.result_string()))
-                        print("B'-{}\t{:2.2f}".format(sample_id, mybleu.bleu(target_str.lower(), hypo_str.lower())))
+                        #print("B-{}\t{:2.2f}".format(sample_id, scorer.result_string()))
+                        #print("B'-{}\t{:2.2f}".format(sample_id, mybleu.bleu(target_str.lower(), hypo_str.lower())))
                         print("B''-{}\t{:2.2f}".format(sample_id, bleu_smooth.bleu(target_str.lower(), hypo_str.lower())))
                         
-                        scorer.reset()
+                        #scorer.reset()
                             
             
             wps_meter.update(num_generated_tokens)
@@ -219,7 +249,13 @@ def main(args):
             writer = csv.writer(f)
             writer.writerow(bleup)
     """
-    return scorer
+
+    #TODO save
+    if hypo_tensor_save:
+        #torch.save(hypo_tensor, 'aspec-test.pt')
+        torch.save(hypo_tensor, 'aspec-train.pt')
+
+    return #scorer
 
 
 def cli_main():
