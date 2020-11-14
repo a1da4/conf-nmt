@@ -1,3 +1,7 @@
+# Paper
+* Confidence Modeling for Neural Machine Translation (IALP2019)
+* Estimating Machine Translation Quality of Any Input Sentence (IJALP2020)
+
 # My setting in paper
 * Model: Transformer, fairseq
 * Data: ASPEC-JE
